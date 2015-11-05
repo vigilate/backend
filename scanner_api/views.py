@@ -7,6 +7,7 @@ from rest_framework.response import Response
 import json
 from pkg_resources import parse_version
 
+from scanner_api.utils import get_query
 from scanner_api.models import Vuln, User, UserPrograms
 from scanner_api.serializers import VulnSerializer, UserSerializer, UserProgramsSerializer
 
@@ -26,23 +27,16 @@ class VulnViewSet(viewsets.ModelViewSet):
     def scan_program(self, request):
 
         result = set()
-        if request.method == "POST" and "query" in request.data:
-            query = request.data['query']
-
-            if query:
-                try:
-                    query = json.loads(query)
-                except:
-                    return Response(status=status.HTTP_400_BAD_REQUEST)
-            else:
-                return Response(status=status.HTTP_400_BAD_REQUEST)
-            
-            if "program_name" in query:
-                for elem in self.queryset.filter(program_name=query['program_name']):
-                    if "program_version" in query:
-                        if parse_version(elem.program_version) <= parse_version(query['program_version']): result.add(elem)
-                    else:
-                        result.add(elem)
+        query = get_query(request)
+        if not query:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+    
+        if "program_name" in query:
+            for elem in self.queryset.filter(program_name=query['program_name']):
+                if "program_version" in query:
+                    if parse_version(elem.program_version) <= parse_version(query['program_version']): result.add(elem)
+                else:
+                    result.add(elem)
             return Response(self.get_serializer(result, many=True).data)
 
         return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -55,25 +49,20 @@ class UserViewSet(viewsets.ModelViewSet):
     # /api/users/scan_cve/
     @list_route(methods=['post'])
     def scan_cve(self, request):
+
         result = set()
-        if request.method == "POST" and "query" in request.data:
-            query = request.data['query']
-            if query:
-                try:
-                    query = json.loads(query)
-                except:
-                    return Response(status=status.HTTP_400_BAD_REQUEST)
-            else:
-                return Response(status=status.HTTP_400_BAD_REQUEST)
+        query = get_query(request)
+        if not query:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
-            if "program_version" not in query or "program_name" not in query or "score" not in query:
-                return Response(status=status.HTTP_400_BAD_REQUEST)
-
-            for elem in UserPrograms.objects.filter(program_name=query['program_name']):
-                if parse_version(elem.program_version) <= parse_version(query['program_version']) and \
-                   elem.minimum_score <= query['score']:
-                    result.add(elem.user_id)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+        if "program_version" not in query or "program_name" not in query or "score" not in query:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        print (query)
+        for elem in UserPrograms.objects.filter(program_name=query['program_name']):
+            if parse_version(elem.program_version) <= parse_version(query['program_version']) and \
+               elem.minimum_score <= query['score']:
+                result.add(elem.user_id)
+        return Response(self.get_serializer(result, many=True).data)
     
 class UserProgramsViewSet(viewsets.ModelViewSet):
     queryset = UserPrograms.objects.all()
@@ -84,39 +73,34 @@ class UserProgramsViewSet(viewsets.ModelViewSet):
     @list_route(methods=['post'])
     def submit_programs(self, request):
         result = set()
+        query = get_query(request)
+        if not query:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
-        if request.method == "POST" and "query" in request.data:
-            try:
-                query = json.loads(request.data['query'])
-            except:
-                return Response(status=status.HTTP_400_BAD_REQUEST)
+        current_user = User.objects.filter(username=request.user)
+        if current_user:
+            current_user = current_user[0]
 
-            current_user = User.objects.filter(username=request.user)
-            if current_user:
-                current_user = current_user[0]
+        if "programs_list" in query:
+            for elem in query['programs_list']:
+                if "program_name" in elem and "program_version" in elem:
+                    prog = UserPrograms.objects.filter(user_id=current_user, program_name=elem['program_name'])
 
-            if "programs_list" in query:
-                for elem in query['programs_list']:
-                    if "program_name" in elem and "program_version" in elem:
-                        prog = UserPrograms.objects.filter(user_id=current_user, program_name=elem['program_name'])
+                    # if prog , user is already monitoring the given program, update is needed
+                    if prog:
+                        prog = prog[0]
+                        if prog.program_version != elem['program_version']:
+                            prog.program_version = elem['program_version']
+                            prog.save()
+                        return Response(status=status.HTTP_200_OK)
 
-                        # if prog , user is already monitoring the given program, update is needed
-                        if prog:
-                            prog = prog[0]
-                            if prog.program_version != elem['program_version']:
-                                prog.program_version = elem['program_version']
-                                prog.save()
-                                return Response(status=status.HTTP_200_OK)
-                            else:
-                                return Response(status=status.HTTP_200_OK)
-
-                        #else: add a new program
-                        elem['user_id'] = current_user
-                        elem['minimum_score'] = 1 # default value
-                        elem['id'] = UserPrograms.next_id()
-                        new_prog = UserPrograms(**elem)
-                        new_prog.save()
-                        return Response(status=status.HTTP_201_CREATED)
+                    #else: add a new program
+                    elem['user_id'] = current_user
+                    elem['minimum_score'] = 1 # default value
+                    elem['id'] = UserPrograms.next_id()
+                    new_prog = UserPrograms(**elem)
+                    new_prog.save()
+                    return Response(status=status.HTTP_201_CREATED)
 
         return Response(status=status.HTTP_400_BAD_REQUEST)
                 
