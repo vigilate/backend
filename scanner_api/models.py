@@ -22,8 +22,15 @@ class User(models.Model):
     id_dealer= models.IntegerField(null=False)
 
 class UserPrograms(models.Model):
-    id = models.IntegerField(primary_key=True, unique=True)
+    id = models.AutoField(primary_key=True, unique=True)
     program_name = models.CharField(max_length=100)
     program_version = models.CharField(max_length=100)
     minimum_score = models.IntegerField(null=False)
     user_id = models.ForeignKey('User')
+
+    def next_id():
+        no = UserPrograms.objects.count()
+        if no == None:
+            return 1
+        else:
+            return no + 1

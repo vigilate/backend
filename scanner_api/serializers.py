@@ -53,7 +53,7 @@ class UserProgramsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.UserPrograms
-        fields = ('id', 'program_name', 'program_version', 'minimum_score', 'user_id')
+        fields = ('program_name', 'program_version', 'minimum_score', 'user_id')
 
     def create(self, validated_data):
         return models.UserPrograms.objects.create(**validated_data)
