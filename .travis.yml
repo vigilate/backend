@@ -5,4 +5,4 @@ env:
   - DJANGO=1.8.6
 #install: // Install section is empty ATM, waiting for requirement analysis and tests
 script:
-	- python manage.py test
+  - python manage.py test
