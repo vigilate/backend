@@ -1,8 +1,8 @@
 language: python
 python:
-	- "2.3.4"
+  - 2.3.4
 env:
-	- DJANGO=1.8.6
+  - DJANGO=1.8.6
 #install: // Install section is empty ATM, waiting for requirement analysis and tests
 script:
 	- python manage.py test
