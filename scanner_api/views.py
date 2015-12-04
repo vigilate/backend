@@ -1,4 +1,6 @@
 from django.http import HttpResponse
+from django.db import IntegrityError
+from django.db.models import Q
 
 from rest_framework import serializers, viewsets, status
 from rest_framework.decorators import detail_route, list_route
@@ -7,10 +9,11 @@ from rest_framework.response import Response
 import json
 from pkg_resources import parse_version
 
-from scanner_api.utils import get_query
-from scanner_api.models import Vuln, User, UserPrograms
-from scanner_api.serializers import VulnSerializer, UserSerializer, UserProgramsSerializer
+from scanner_api.utils import get_query, parse_cpe
+from scanner_api.models import Vuln, User, UserPrograms, Alert
+from scanner_api.serializers import VulnSerializer, UserSerializer, UserProgramsSerializer, AlertSerializer
 
+from lib.core.methods import *
 
 
 def home(request):
@@ -30,7 +33,7 @@ class VulnViewSet(viewsets.ModelViewSet):
         query = get_query(request)
         if not query:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-    
+
         if "program_name" in query:
             for elem in self.queryset.filter(program_name=query['program_name']):
                 if "program_version" in query:
@@ -40,7 +43,7 @@ class VulnViewSet(viewsets.ModelViewSet):
             return Response(self.get_serializer(result, many=True).data)
 
         return Response(status=status.HTTP_400_BAD_REQUEST)
-
+    
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
@@ -57,13 +60,13 @@ class UserViewSet(viewsets.ModelViewSet):
 
         if "program_version" not in query or "program_name" not in query or "score" not in query:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        print (query)
+
         for elem in UserPrograms.objects.filter(program_name=query['program_name']):
             if parse_version(elem.program_version) <= parse_version(query['program_version']) and \
                elem.minimum_score <= query['score']:
                 result.add(elem.user_id)
         return Response(self.get_serializer(result, many=True).data)
-    
+
 class UserProgramsViewSet(viewsets.ModelViewSet):
     queryset = UserPrograms.objects.all()
     serializer_class = UserProgramsSerializer
@@ -103,4 +106,49 @@ class UserProgramsViewSet(viewsets.ModelViewSet):
                     return Response(status=status.HTTP_201_CREATED)
 
         return Response(status=status.HTTP_400_BAD_REQUEST)
+
+class AlertViewSet(viewsets.ModelViewSet):
+    queryset = Alert.objects.all()
+    serializer_class = AlertSerializer
+
+    # POST query{"cveid": "CVE-2015-XXXX}
+    # /api/alerts/scan_cve/
+
+    # get a CVE-ID, find CPE, and return alerts
+    @list_route(methods=['post'])
+    def scan_cve(self, request):
+        result = set()
+        progs = set()
+
+        query = get_query(request)
+        if not query:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        if "cveid" not in query:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        cpe_list = CveInfo(query['cveid']).get_cpe()
+        cpe_json = json.loads(cpe_list)
+
+        # Get users programs
+        for elem in cpe_json:
+            cpe = parse_cpe(elem['id'])
+            for uprog in UserPrograms.objects.filter(
+                    Q(program_name__icontains=cpe['software']) & Q(program_name__icontains=cpe['devlopper'])):
+                if parse_version(cpe['version']) <= parse_version(uprog.program_version):
+                    progs.add(uprog)
                 
+        # Create and return alerts if they do not already exists
+        for uprog in progs:
+            elem = Alert()
+            elem.user = uprog.user_id
+            elem.program = uprog
+            elem.vuln = Vuln.objects.filter(cveid=query['cveid'])[0]
+            try:
+                elem.save()
+                result.add(elem)
+            except IntegrityError:
+                continue
+
+        # Save a vulnerability if it's actually not in db ?
+        return Response(self.get_serializer(result, many=True).data)
+

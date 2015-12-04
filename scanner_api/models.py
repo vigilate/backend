@@ -10,6 +10,7 @@ class Vuln(models.Model):
     date = models.DateTimeField(auto_now_add=True, auto_now=False, verbose_name="Date de parution")
     detail = models.TextField(null=True)
     simple_detail = models.TextField(null=True)
+    concerned_cpe = models.TextField(null=True)
     score = models.IntegerField()
 
 class User(models.Model):
@@ -34,3 +35,11 @@ class UserPrograms(models.Model):
             return 1
         else:
             return no + 1
+
+class Alert(models.Model):
+    id = models.AutoField(primary_key=True, unique=True)
+    user = models.ForeignKey('User')
+    program = models.ForeignKey('UserPrograms')
+    vuln = models.ForeignKey('Vuln')
+    class Meta:
+        unique_together = ["user", "program", "vuln"]

@@ -13,7 +13,7 @@ class VulnSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Vuln
-        fields = ('cveid', 'program_name', 'program_version', 'date', 'detail', 'simple_detail', 'score') 
+        fields = ('cveid', 'program_name', 'program_version', 'date', 'detail', 'simple_detail','concerned_cpe', 'score')
 
     def create(self, validated_data):
         return models.Vuln.objects.create(**validated_data)
@@ -64,5 +64,22 @@ class UserProgramsSerializer(serializers.ModelSerializer):
         instance.program_version = validated_data.get('program_version', instance.program_version)
         instance.minimum_score = validated_data.get('minimum_score', instance.minimum_score)
         instance.user_id = validated_data.get('user_id', instance.user_id)
+        instance.save()
+        return instance
+
+class AlertSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.Alert
+        fields = ('user', 'program', 'vuln')
+
+    def create(self, validated_data):
+        return models.Alert.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+        instance.id = validated_data.get('id', instance.id)
+        instance.user = validated_data.get('user', instance.user)
+        instance.program = validated_data.get('program', instance.program)
+        instance.vuln = validated_data.get('vuln', instance.vuln)
         instance.save()
         return instance

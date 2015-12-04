@@ -11,3 +11,11 @@ def get_query(request):
             else:
                 return query 
         return None
+
+def parse_cpe(cpe):
+    res = {}
+    cpe = [elem.split('_')[0] for elem in cpe.split(':') if elem]
+    res['devlopper'] = cpe[2]
+    res['software'] = cpe[3]
+    res['version'] = cpe[4]
+    return res

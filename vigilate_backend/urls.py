@@ -9,6 +9,7 @@ router = routers.DefaultRouter()
 router.register(r'vulnz', views.VulnViewSet)
 router.register(r'users', views.UserViewSet)
 router.register(r'uprog', views.UserProgramsViewSet)
+router.register(r'alerts', views.AlertViewSet)
 
 urlpatterns = [
     url('^api/', include(router.urls)),
