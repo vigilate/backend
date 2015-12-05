@@ -1,6 +1,3 @@
-alabaster==0.7.6
-astroid==1.3.8
-Babel==2.1.1
 Django==1.8.5
 django-filter==0.11.0
 djangorestframework==3.2.4
@@ -15,7 +12,6 @@ logilab-common==1.1.0
 Markdown==2.6.2
 MarkupSafe==0.23
 mysqlclient==1.3.6
-numpy==1.9.2
 packaging==15.3
 Pmw==2.0.1
 psycopg2==2.6.1
@@ -24,7 +20,6 @@ pylint==1.4.4
 PyMySQL==0.6.7
 python-dateutil==2.4.2
 pytz==2015.7
-pyxdg==0.25
 requests==2.8.1
 six==1.9.0
 snowballstemmer==1.2.0
@@ -34,4 +29,3 @@ SQLAlchemy==1.0.8
 SQLAlchemy-Utils==0.31.0
 virtualenv==13.1.2
 Werkzeug==0.10.4
-yarg==0.1.9
