@@ -8,7 +8,7 @@ env:
   - DJANGO=1.8.5
 #install: // Install section is empty ATM, waiting for requirement analysis and tests
 before_script:
-  - psql -c 'create database Vigilate;' -U postgres
+  - psql -c 'CREATE DATABASE Vigilate;' -U postgres
   - psql -c 'CREATE USER admin;'
   - psql -c 'GRANT ROOT to admin;'
   - echo "USE mysql;\nUPDATE user SET password=PASSWORD('toor') WHERE user='root';\nFLUSH PRIVILEGES;\n" | mysql -u root
