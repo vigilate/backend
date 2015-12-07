@@ -1,8 +1,13 @@
+services:
+  - mysql
 language: python
 python:
   - 3.4.2
 env:
   - DJANGO=1.8.5
 #install: // Install section is empty ATM, waiting for requirement analysis and tests
+before_script:
+  - echo "USE mysql;\nUPDATE user SET password=PASSWORD('toor') WHERE user='root';\nFLUSH PRIVILEGES;\n" | mysql -u root
+  - mysql -e 'create database Vigilate;'
 script:
   - python manage.py test
