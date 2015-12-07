@@ -14,6 +14,6 @@ router.register(r'alerts', views.AlertViewSet)
 urlpatterns = [
     url('^api/', include(router.urls)),
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^$', 'scanner_api.views.home'),
+    url(r'^$', views.home),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 ]
