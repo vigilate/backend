@@ -95,16 +95,15 @@ class UserProgramsViewSet(viewsets.ModelViewSet):
                         if prog.program_version != elem['program_version']:
                             prog.program_version = elem['program_version']
                             prog.save()
-                        return Response(status=status.HTTP_200_OK)
+                    else:
+                        #else: add a new program
+                        elem['user_id'] = current_user
+                        elem['minimum_score'] = 1 # default value
+                        elem['id'] = UserPrograms.next_id()
+                        new_prog = UserPrograms(**elem)
+                        new_prog.save()
 
-                    #else: add a new program
-                    elem['user_id'] = current_user
-                    elem['minimum_score'] = 1 # default value
-                    elem['id'] = UserPrograms.next_id()
-                    new_prog = UserPrograms(**elem)
-                    new_prog.save()
-                    return Response(status=status.HTTP_201_CREATED)
-
+            return Response(status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 class AlertViewSet(viewsets.ModelViewSet):
