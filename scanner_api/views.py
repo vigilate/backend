@@ -43,7 +43,28 @@ class VulnViewSet(viewsets.ModelViewSet):
             return Response(self.get_serializer(result, many=True).data)
 
         return Response(status=status.HTTP_400_BAD_REQUEST)
-    
+
+    # POST a user ID and get vulnerabilities if prog version < vuln version
+    # /api/vulnz/user_vulnerabilities ---> query={"user_id": 0}
+    @list_route(methods=['post'])
+    def user_vulnerabilities(self, request):
+
+        user_vulns = set()
+        query = get_query(request)
+        if not query:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        if "user_id" in query:
+            for user in User.objects.filter(id=query['user_id']):
+                for user_program in UserPrograms.objects.filter(user_id=user):
+                    vulns = Vuln.objects.filter(program_name=user_program.program_name)
+                    for elem in vulns:
+                        if parse_version(elem.program_version) > parse_version(user_program.program_version):
+                            user_vulns.add(elem)
+
+            return Response(self.get_serializer(user_vulns, many=True).data)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
