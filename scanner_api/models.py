@@ -4,7 +4,7 @@ from pygments.styles import get_all_styles
 
 # Create your models here.
 class Vuln(models.Model):
-    cveid = models.CharField(max_length=20)
+    cveid = models.CharField(max_length=20, unique=True)
     program_name = models.CharField(max_length=100)
     program_version = models.CharField(max_length=100)
     date = models.DateTimeField(auto_now_add=True, auto_now=False, verbose_name="Date de parution")
@@ -20,7 +20,7 @@ class User(models.Model):
     password = models.TextField(null=False)
     user_type = models.IntegerField(null=False)
     contrat = models.IntegerField(null=False)
-    id_dealer= models.IntegerField(null=False)
+    id_dealer= models.IntegerField()
 
 class UserPrograms(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
