@@ -5,7 +5,7 @@ services:
   - postgresql
 language: python
 python:
-  - 3.4.2
+  - 3.5.0
 env:
   - DJANGO=1.8.5
 #install: // Install section is empty ATM, waiting for requirement analysis and tests
