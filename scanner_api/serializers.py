@@ -36,16 +36,23 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('id', 'username', 'email', 'password', 'user_type', 'contrat', 'id_dealer')
 
     def create(self, validated_data):
-        return models.User.objects.create(**validated_data)
+
+        data = {k:v for k,v in validated_data.items() if k != "password"}
+        user = models.User.objects.create(**data)
+        if "password" in validated_data:
+            user.set_password(validated_data['password'])
+        user.save()
+        return user
 
     def update(self, instance, validated_data):
         instance.id = validated_data.get('id', instance.id)
         instance.username = validated_data.get('username', instance.username)
-        instance.password = validated_data.get('password', instance.password)
-        instance.email = valiedated_data.get('email', instance.email)
+        instance.email = validated_data.get('email', instance.email)
         instance.user_type = validated_data.get('user_type', instance.user_type)
         instance.contrat = validated_data.get('contrat', instance.contrat)
         instance.id_dealer = validated_data.get('id_dealer', instance.id_dealer)
+        
+        instance.set_password(validated_data['password'])
         instance.save()
         return instance
 

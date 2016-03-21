@@ -1,6 +1,10 @@
 from django.db import models
 from pygments.lexers import get_all_lexers
 from pygments.styles import get_all_styles
+import PyArgon2
+import binascii
+import random
+import string
 
 # Create your models here.
 class Vuln(models.Model):
@@ -21,6 +25,28 @@ class User(models.Model):
     user_type = models.IntegerField(null=False)
     contrat = models.IntegerField(null=False)
     id_dealer= models.IntegerField()
+
+    def is_authenticated(self):
+        return True
+
+    def has_perms(self, perm, obj=None):
+        return True
+
+    def set_password(self, password):
+        charset = string.digits + string.ascii_letters
+
+        salt = ''.join([random.choice(charset) for _ in range(10)])
+        h = PyArgon2.Hash_pwd(password.encode(), salt.encode())
+        h = (salt.encode()+b"$"+binascii.hexlify(h)).decode("utf8")
+        self.password = h
+
+    def check_password(self, pwd):
+        salt,hsh = self.password.split("$", 1)
+        ret = PyArgon2.Check_pwd(pwd.encode(), salt.encode(), binascii.unhexlify(hsh))
+        return ret
+
+
+
 
 class UserPrograms(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
