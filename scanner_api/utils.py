@@ -10,7 +10,7 @@ def get_query(request):
                 return None
             else:
                 return query 
-        return None
+    return None
 
 def parse_cpe(cpe):
     res = {}

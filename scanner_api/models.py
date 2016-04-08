@@ -20,7 +20,7 @@ class Vuln(models.Model):
 class User(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
     username = models.CharField(max_length=20, unique=True)
-    email = models.CharField(max_length=20, unique=True)
+    email = models.CharField(max_length=50, unique=True)
     password = models.TextField(null=False)
     user_type = models.IntegerField(null=False)
     contrat = models.IntegerField(null=False)

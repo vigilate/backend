@@ -134,14 +134,10 @@ class UserProgramsViewSet(viewsets.ModelViewSet):
         if not query:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
-        current_user = User.objects.filter(username=request.user)
-        if current_user:
-            current_user = current_user[0]
-
         if "programs_list" in query:
             for elem in query['programs_list']:
                 if "program_name" in elem and "program_version" in elem:
-                    prog = UserPrograms.objects.filter(user_id=current_user, program_name=elem['program_name'])
+                    prog = UserPrograms.objects.filter(user_id=request.user.id, program_name=elem['program_name'])
 
                     # if prog , user is already monitoring the given program, update is needed
                     if prog:
@@ -151,7 +147,7 @@ class UserProgramsViewSet(viewsets.ModelViewSet):
                             prog.save()
                     else:
                         #else: add a new program
-                        elem['user_id'] = current_user
+                        elem['user_id'] = request.user
                         elem['minimum_score'] = 1 # default value
                         elem['id'] = UserPrograms.next_id()
                         new_prog = UserPrograms(**elem)
