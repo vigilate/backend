@@ -9,6 +9,7 @@ from rest_framework.response import Response
 import json
 from pkg_resources import parse_version
 
+from django.contrib.auth.models import User as UserDjango
 from scanner_api.utils import get_query, parse_cpe
 from scanner_api.models import Vuln, User, UserPrograms, Alert
 from scanner_api.serializers import VulnSerializer, UserSerializer, UserProgramsSerializer, AlertSerializer
@@ -69,6 +70,22 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
+
+    def list(self, request):
+        superuser = False
+        try:
+            u = UserDjango.objects.get(username=request.user)
+            superuser = True
+        except UserDjango.DoesNotExist:
+            pass
+
+        if not superuser:
+            queryset = User.objects.filter(id=request.user.id)
+        else:
+            queryset = User.objects.all()
+        return Response(self.get_serializer(queryset, many=True).data)
+
+    
     # POST a vulnerability query={"program_name":"vigilate", "program_version":"54", "score":50} -> return concerned users
     # /api/users/scan_cve/
     @list_route(methods=['post'])
@@ -92,6 +109,22 @@ class UserProgramsViewSet(viewsets.ModelViewSet):
     queryset = UserPrograms.objects.all()
     serializer_class = UserProgramsSerializer
 
+    def list(self, request):
+        superuser = False
+        try:
+            u = UserDjango.objects.get(username=request.user)
+            superuser = True
+        except UserDjango.DoesNotExist:
+            pass
+
+        if not superuser:
+            queryset = UserPrograms.objects.filter(user_id=request.user.id)
+        else:
+            queryset = UserPrograms.objects.all()
+        return Response(self.get_serializer(queryset, many=True).data)
+
+
+    
     # POST query{"programs_list": [{"program_name":"toto", "program_version":"1.2.4.1"}]}'
     # /api/uprog/submit_programs/
     @list_route(methods=['post'])
@@ -130,6 +163,21 @@ class UserProgramsViewSet(viewsets.ModelViewSet):
 class AlertViewSet(viewsets.ModelViewSet):
     queryset = Alert.objects.all()
     serializer_class = AlertSerializer
+
+    def list(self, request):
+        superuser = False
+        try:
+            u = UserDjango.objects.get(username=request.user)
+            superuser = True
+        except UserDjango.DoesNotExist:
+            pass
+
+        if not superuser:
+            queryset = Alert.objects.filter(user_id=request.user.id)
+        else:
+            queryset = Alert.objects.all()
+        return Response(self.get_serializer(queryset, many=True).data)
+
 
     # POST query{"cveid": "CVE-2015-XXXX}
     # /api/alerts/scan_cve/
