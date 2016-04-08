@@ -1,4 +1,4 @@
-#from django.contrib.auth.models import User
+from django.contrib.auth.models import User as UserDjango
 from rest_framework import authentication
 from rest_framework import exceptions
 from scanner_api.models import User
@@ -9,7 +9,8 @@ class VigilateAuthentication(authentication.BasicAuthentication):
     
     def authenticate(self, request):
         authheader = request.META.get('HTTP_AUTHORIZATION', '')
-
+            
+        
         if not authheader:
             return None
         
@@ -24,16 +25,27 @@ class VigilateAuthentication(authentication.BasicAuthentication):
         if not username:
             return None
 
+        user = None
+
         try:
             user = User.objects.get(username=username)
             if not user.check_password(pwd):
                 raise exceptions.AuthenticationFailed('Wrong password')
             
         except User.DoesNotExist:
+            pass
+
+        if user:
+            return (user, None)
+        
+        try:
+            user = UserDjango.objects.get(username=username)
+            if not user.check_password(pwd):
+                raise exceptions.AuthenticationFailed('Wrong password')
+            
+        except UserDjango.DoesNotExist:
             raise exceptions.AuthenticationFailed('No such user')
 
         
         return (user, None)
 
-    # def authenticate_header(self, request):
-    #     return "Api credentials"
