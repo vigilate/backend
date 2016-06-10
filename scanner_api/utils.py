@@ -10,6 +10,12 @@ def get_query(request):
                 return None
             else:
                 return query 
+        try:
+            query = json.loads(query)
+        except:
+            return None
+        else:
+            return query
     return None
 
 def parse_cpe(cpe):
