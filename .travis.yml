@@ -15,6 +15,6 @@ before_script:
   - mysql -e 'create database Vigilate;'
   - sudo apt-get -qq update
   - sudo apt-get install -y python3-dev
-  - ./install-pyargon2.sh
+  - sudo ./install-pyargon2.sh
 script:
   - python manage.py test scanner_api/
