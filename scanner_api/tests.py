@@ -13,7 +13,7 @@ class UserProgramsTestCase(APITestCase):
         self.client = APIClient()
         credentials = base64.b64encode(b"test:test")
 
-        self.client.defaults['HTTP_AUTHORIZATION'] = 'Basic ' + str(credentials).replace("b'", "")
+        self.client.defaults['HTTP_AUTHORIZATION'] = 'Basic ' + str(credentials.decode("utf-8"))
         debug(self.client.defaults['HTTP_AUTHORIZATION'])
         res = User.objects.create_user(username="test", password="test")
 
