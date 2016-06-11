@@ -17,4 +17,4 @@ before_script:
   - sudo apt-get install -y python3-dev
   - ./install-pyargon2.sh
 script:
-  - python manage.py test
+  - python manage.py test scanner_api/
