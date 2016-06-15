@@ -3,7 +3,7 @@ import json
 import base64
 from django.contrib.auth.models import User
 from rest_framework.test import APITestCase, APIClient
-from scanner_api import models
+from vigilate_backend import models
 
 def debug_print(msg):
     print("\n%s\n" % msg, file=sys.stderr)

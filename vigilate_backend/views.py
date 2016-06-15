@@ -7,9 +7,9 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import list_route
 from rest_framework.response import Response
 from pkg_resources import parse_version
-from scanner_api.utils import get_query, parse_cpe
-from scanner_api.models import Vuln, User, UserPrograms, Alert
-from scanner_api.serializers import VulnSerializer, UserSerializer, UserProgramsSerializer, AlertSerializer
+from vigilate_backend.utils import get_query, parse_cpe
+from vigilate_backend.models import Vuln, User, UserPrograms, Alert
+from vigilate_backend.serializers import VulnSerializer, UserSerializer, UserProgramsSerializer, AlertSerializer
 from lib.core.methods import *
 
 

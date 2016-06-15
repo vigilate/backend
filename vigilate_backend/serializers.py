@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from scanner_api import models
+from vigilate_backend import models
 
 class VulnSerializer(serializers.ModelSerializer):
 

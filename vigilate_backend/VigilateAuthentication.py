@@ -2,7 +2,7 @@ import base64
 from django.contrib.auth.models import User as UserDjango
 from rest_framework import authentication
 from rest_framework import exceptions
-from scanner_api.models import User
+from vigilate_backend.models import User
 
 class VigilateAuthentication(authentication.BasicAuthentication):
 

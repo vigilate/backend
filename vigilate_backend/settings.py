@@ -37,8 +37,8 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'scanner_api',
     'rest_framework',
+    'vigilate_backend'
 )
 
 MIDDLEWARE_CLASSES = (
@@ -117,7 +117,7 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.DjangoModelPermissions'
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'scanner_api.VigilateAuthentication.VigilateAuthentication',
+        'vigilate_backend.VigilateAuthentication.VigilateAuthentication',
     ),
     'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',)
 }

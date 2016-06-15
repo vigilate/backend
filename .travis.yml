@@ -16,4 +16,4 @@ before_script:
   - mysql -e 'create database Vigilate;'
   - ./install-pyargon2.sh
 script:
-  - python3 manage.py test scanner_api/
+  - python3 manage.py test vigilate_backend/

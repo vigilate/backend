@@ -3,7 +3,7 @@
 from django.conf.urls import include, url
 from django.contrib import admin
 from rest_framework import routers
-from scanner_api import views
+from vigilate_backend import views
 
 router = routers.DefaultRouter()
 router.register(r'vulnz', views.VulnViewSet)
