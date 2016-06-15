@@ -1,19 +1,12 @@
-import django_filters
-from django.http import HttpResponse
-from django.shortcuts import render
-
-from rest_framework import routers, serializers, viewsets, filters, generics
-from rest_framework.decorators import detail_route, list_route
-from rest_framework.response import Response
-
-from pkg_resources import parse_version
+from rest_framework import serializers
 from scanner_api import models
 
 class VulnSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Vuln
-        fields = ('cveid', 'program_name', 'program_version', 'date', 'detail', 'simple_detail','concerned_cpe', 'score')
+        fields = ('cveid', 'program_name', 'program_version', 'date',
+                  'detail', 'simple_detail', 'concerned_cpe', 'score')
 
     def create(self, validated_data):
         return models.Vuln.objects.create(**validated_data)
@@ -37,7 +30,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
 
-        data = {k:v for k,v in validated_data.items() if k != "password"}
+        data = {k:v for k, v in validated_data.items() if k != "password"}
         user = models.User.objects.create(**data)
         if "password" in validated_data:
             user.set_password(validated_data['password'])
@@ -51,7 +44,7 @@ class UserSerializer(serializers.ModelSerializer):
         instance.user_type = validated_data.get('user_type', instance.user_type)
         instance.contrat = validated_data.get('contrat', instance.contrat)
         instance.id_dealer = validated_data.get('id_dealer', instance.id_dealer)
-        
+
         instance.set_password(validated_data['password'])
         instance.save()
         return instance

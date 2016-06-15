@@ -1,19 +1,15 @@
+import json
 from django.http import HttpResponse
 from django.db import IntegrityError
 from django.db.models import Q
-
-from rest_framework import serializers, viewsets, status
-from rest_framework.decorators import detail_route, list_route
-from rest_framework.response import Response
-
-import json
-from pkg_resources import parse_version
-
 from django.contrib.auth.models import User as UserDjango
+from rest_framework import viewsets, status
+from rest_framework.decorators import list_route
+from rest_framework.response import Response
+from pkg_resources import parse_version
 from scanner_api.utils import get_query, parse_cpe
 from scanner_api.models import Vuln, User, UserPrograms, Alert
 from scanner_api.serializers import VulnSerializer, UserSerializer, UserProgramsSerializer, AlertSerializer
-
 from lib.core.methods import *
 
 
@@ -38,7 +34,8 @@ class VulnViewSet(viewsets.ModelViewSet):
         if "program_name" in query:
             for elem in self.queryset.filter(program_name=query['program_name']):
                 if "program_version" in query:
-                    if parse_version(elem.program_version) <= parse_version(query['program_version']): result.add(elem)
+                    if parse_version(elem.program_version) <= parse_version(query['program_version']):
+                        result.add(elem)
                 else:
                     result.add(elem)
             return Response(self.get_serializer(result, many=True).data)
@@ -74,7 +71,7 @@ class UserViewSet(viewsets.ModelViewSet):
     def list(self, request):
         superuser = False
         try:
-            u = UserDjango.objects.get(username=request.user)
+            UserDjango.objects.get(username=request.user)
             superuser = True
         except UserDjango.DoesNotExist:
             pass
@@ -85,7 +82,7 @@ class UserViewSet(viewsets.ModelViewSet):
             queryset = User.objects.all()
         return Response(self.get_serializer(queryset, many=True).data)
 
-    
+
     # POST a vulnerability query={"program_name":"vigilate", "program_version":"54", "score":50} -> return concerned users
     # /api/users/scan_cve/
     @list_route(methods=['post'])
@@ -112,7 +109,7 @@ class UserProgramsViewSet(viewsets.ModelViewSet):
     def list(self, request):
         superuser = False
         try:
-            u = UserDjango.objects.get(username=request.user)
+            UserDjango.objects.get(username=request.user)
             superuser = True
         except UserDjango.DoesNotExist:
             pass
@@ -124,7 +121,7 @@ class UserProgramsViewSet(viewsets.ModelViewSet):
         return Response(self.get_serializer(queryset, many=True).data)
 
 
-    
+
     # POST query{"programs_list": [{"program_name":"toto", "program_version":"1.2.4.1"}]}'
     # /api/uprog/submit_programs/
     @list_route(methods=['post'])
@@ -163,7 +160,7 @@ class AlertViewSet(viewsets.ModelViewSet):
     def list(self, request):
         superuser = False
         try:
-            u = UserDjango.objects.get(username=request.user)
+            UserDjango.objects.get(username=request.user)
             superuser = True
         except UserDjango.DoesNotExist:
             pass
@@ -200,7 +197,7 @@ class AlertViewSet(viewsets.ModelViewSet):
                     Q(program_name__icontains=cpe['software']) & Q(program_name__icontains=cpe['devlopper'])):
                 if parse_version(cpe['version']) <= parse_version(uprog.program_version):
                     progs.add(uprog)
-                
+
         # Create and return alerts if they do not already exists
         for uprog in progs:
             elem = Alert()

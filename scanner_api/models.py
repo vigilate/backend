@@ -1,10 +1,8 @@
-from django.db import models
-from pygments.lexers import get_all_lexers
-from pygments.styles import get_all_styles
-import PyArgon2
 import binascii
 import random
 import string
+import PyArgon2
+from django.db import models
 
 # Create your models here.
 class Vuln(models.Model):
@@ -24,7 +22,7 @@ class User(models.Model):
     password = models.TextField(null=False)
     user_type = models.IntegerField(null=False)
     contrat = models.IntegerField(null=False)
-    id_dealer= models.IntegerField()
+    id_dealer = models.IntegerField()
 
     def is_authenticated(self):
         return True
@@ -36,12 +34,12 @@ class User(models.Model):
         charset = string.digits + string.ascii_letters
 
         salt = ''.join([random.choice(charset) for _ in range(10)])
-        h = PyArgon2.Hash_pwd(password.encode(), salt.encode())
-        h = (salt.encode()+b"$"+binascii.hexlify(h)).decode("utf8")
-        self.password = h
+        hsh = PyArgon2.Hash_pwd(password.encode(), salt.encode())
+        hsh = (salt.encode()+b"$"+binascii.hexlify(hsh)).decode("utf8")
+        self.password = hsh
 
     def check_password(self, pwd):
-        salt,hsh = self.password.split("$", 1)
+        salt, hsh = self.password.split("$", 1)
         ret = PyArgon2.Check_pwd(pwd.encode(), salt.encode(), binascii.unhexlify(hsh))
         return ret
 
@@ -56,11 +54,11 @@ class UserPrograms(models.Model):
     user_id = models.ForeignKey('User')
 
     def next_id():
-        no = UserPrograms.objects.count()
-        if no == None:
+        nb_obj = UserPrograms.objects.count()
+        if nb_obj is None:
             return 1
         else:
-            return no + 1
+            return nb_obj + 1
 
 class Alert(models.Model):
     id = models.AutoField(primary_key=True, unique=True)

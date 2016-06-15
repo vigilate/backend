@@ -1,9 +1,9 @@
 """vigilate_backend URL Configuration"""
 
-from django.conf.urls import include, patterns, url
+from django.conf.urls import include, url
 from django.contrib import admin
-from rest_framework import routers, serializers, viewsets
-from scanner_api import models, views
+from rest_framework import routers
+from scanner_api import views
 
 router = routers.DefaultRouter()
 router.register(r'vulnz', views.VulnViewSet)

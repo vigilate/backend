@@ -2,12 +2,11 @@ import sys
 import json
 import base64
 from django.contrib.auth.models import User
+from rest_framework.test import APITestCase, APIClient
 from scanner_api import models
-from rest_framework import status
-from rest_framework.test import APITestCase, APIRequestFactory, force_authenticate, APIClient
 
 def debug_print(msg):
-    print ("\n%s\n" % msg, file=sys.stderr)
+    print("\n%s\n" % msg, file=sys.stderr)
 
 class UserProgramsTestCase(APITestCase):
     def setUp(self):
@@ -16,7 +15,7 @@ class UserProgramsTestCase(APITestCase):
         credentials = base64.b64encode(b"test:test")
 
         self.client.defaults['HTTP_AUTHORIZATION'] = 'Basic ' + str(credentials.decode("utf-8"))
-        res = User.objects.create_user(username="test", password="test")
+        User.objects.create_user(username="test", password="test")
 
         self.new_client = models.User()
         self.new_client.username = "test"
@@ -28,11 +27,16 @@ class UserProgramsTestCase(APITestCase):
         self.new_client.save()
 
     def test_submit_multiples_programs(self):
-        res = self.client.login(username="test", password="test")
-        
-        prog_list = {"programs_list" : [{"program_name" : "Mozilla Firefox", "program_version" : "31.0"}, {"program_name" : "blabla", "program_version" : "2.0.1"}]}
+        self.client.login(username="test", password="test")
 
-        resp = self.client.post("/api/uprog/submit_programs/",json.dumps(prog_list), content_type="application/x-www-form-urlencoded")
+        prog_list = {"programs_list" :
+                     [
+                         {"program_name" : "Mozilla Firefox", "program_version" : "31.0"},
+                         {"program_name" : "blabla", "program_version" : "2.0.1"}
+                     ]}
+
+        resp = self.client.post("/api/uprog/submit_programs/", json.dumps(prog_list),
+                                content_type="application/x-www-form-urlencoded")
 
         self.assertTrue(resp.status_code == 200)
         user_progs = models.UserPrograms.objects.filter(user_id=self.new_client.id)

@@ -9,7 +9,7 @@ def get_query(request):
             except:
                 return None
             else:
-                return query 
+                return query
         try:
             query = json.loads(query)
         except:
