@@ -1,4 +1,4 @@
-sudo: required
+sudo: false
 
 services:
   - mysql
@@ -9,12 +9,14 @@ python:
   - "3.5"
 cache: pip
 env:
-  - DJANGO=1.9
-#install: // Install section is empty ATM, waiting for requirement analysis and tests
+  - DJANGO=1.9 LD_LIBRARY_PATH=$HOME/lib/
+install:
+  - pip install -r requirements.txt
 before_script:
   - psql -c 'CREATE DATABASE Vigilate;' -U postgres
   - echo "USE mysql;\nUPDATE user SET password=PASSWORD('toor') WHERE user='root';\nFLUSH PRIVILEGES;\n" | mysql -u root
   - mysql -e 'create database Vigilate;'
-  - ./install-pyargon2.sh
+  - mkdir -p $HOME/lib/
+  - INSTALL_DIR=$HOME/lib/ ./install-pyargon2.sh nosudo
 script:
   - python3 manage.py test vigilate_backend/
