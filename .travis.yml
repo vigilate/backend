@@ -7,6 +7,7 @@ language: python
 python:
   - "3.4"
   - "3.5"
+cache: pip
 env:
   - DJANGO=1.9
 #install: // Install section is empty ATM, waiting for requirement analysis and tests
