@@ -39,7 +39,7 @@
 
 * **URL**
 
-  /api/uprogram/
+  /api/uprog/
 
 * **Method:**
 
@@ -65,6 +65,21 @@
     {"minimum_score": 0, "user_id": 2, "program_name": "firefox", "program_version": "0"}
     ```
 
+**Delete Program**
+----
+  Delete a program from an user
+
+* **URL**
+
+  /api/uprog/:id
+
+* **Method:**
+
+  `DELETE`
+
+* **Success Response:**
+
+  * **Code:** 200 <br />
 
 **List Programs**
 ----
