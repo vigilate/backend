@@ -28,6 +28,32 @@ class UserProgramsTestCase(APITestCase):
         self.new_client.id_dealer = 1
         self.new_client.save()
 
+    def test_api_access(self):
+        self.client.login(username="test", password="test")
+        resp = self.client.get("/api/")
+        self.assertTrue(resp.status_code == 200)
+
+    def test_route_alerts(self):
+        self.client.login(username="test", password="test")
+        resp_alerts = self.client.get("/api/alerts/")
+        self.assertTrue(resp_alerts.status_code == 200)
+
+    def test_route_user_progs(self):
+        self.client.login(username="test", password="test")
+        resp_progs = self.client.get("/api/uprog/")
+        self.assertTrue(resp_progs.status_code == 200)
+
+    def test_route_vulnz(self):
+        self.client.login(username="test", password="test")
+        resp_vulnz = self.client.get("/api/vulnz/")
+        self.assertTrue(resp_vulnz.status_code == 200)
+
+    # fix db problems before to test this one
+    # def test_route_users(self):
+    #     self.client.login(username="test", password="test")
+    #     resp_users = self.client.get("/api/users/")
+    #     self.assertTrue(resp_users.status_code == 200)
+
     def test_submit_one_program(self):
         self.client.login(username="test", password="test")
 
