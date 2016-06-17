@@ -11,6 +11,7 @@ cache: pip
 env:
   - DJANGO=1.9 LD_LIBRARY_PATH=$HOME/lib/
 install:
+  - pip install -U pip wheel
   - pip install -r requirements.txt
 before_script:
   - psql -c 'CREATE DATABASE Vigilate;' -U postgres
