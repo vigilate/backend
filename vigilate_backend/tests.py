@@ -5,8 +5,10 @@ from django.contrib.auth.models import User
 from rest_framework.test import APITestCase, APIClient
 from vigilate_backend import models
 
-def debug_print(msg):
-    print("\n%s\n" % msg, file=sys.stderr)
+def debug_print(msg, var):
+    print(file=sys.stderr)
+    print(msg, var, file=sys.stderr)
+    print(file=sys.stderr)
 
 class UserProgramsTestCase(APITestCase):
     def setUp(self):
@@ -25,6 +27,24 @@ class UserProgramsTestCase(APITestCase):
         self.new_client.contrat = 1
         self.new_client.id_dealer = 1
         self.new_client.save()
+
+    def test_submit_one_program(self):
+        self.client.login(username="test", password="test")
+
+        prog_list = {"programs_list" :
+                     [
+                         {"program_name" : "Google Chrome", "program_version" : "51.0"}
+                     ]}
+
+        resp = self.client.post("/api/uprog/submit_programs/", json.dumps(prog_list),
+                                content_type="application/x-www-form-urlencoded")
+
+        self.assertTrue(resp.status_code == 200)
+        user_progs = models.UserPrograms.objects.filter(user_id=self.new_client.id)
+
+        prog_saved = {"program_name" : user_progs[0].program_name, "program_version" : user_progs[0].program_version}
+
+        self.assertTrue(prog_list['programs_list'][0] == prog_saved)
 
     def test_submit_multiples_programs(self):
         self.client.login(username="test", password="test")
@@ -47,3 +67,5 @@ class UserProgramsTestCase(APITestCase):
 
         for sent in prog_list['programs_list']:
             self.assertTrue(sent in database_programs_json)
+
+        
