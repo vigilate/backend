@@ -4,8 +4,9 @@ from django.db import IntegrityError
 from django.db.models import Q
 from django.contrib.auth.models import User as UserDjango
 from rest_framework import viewsets, status
-from rest_framework.decorators import list_route
+from rest_framework.decorators import list_route, permission_classes
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from pkg_resources import parse_version
 from vigilate_backend.utils import get_query, parse_cpe
 from vigilate_backend.models import Vuln, User, UserPrograms, Alert
@@ -75,6 +76,14 @@ class UserViewSet(viewsets.ModelViewSet):
     """
     serializer_class = UserSerializer
 
+    def get_permissions(self):
+        """Allow non-authenticated user to create an account
+        """
+
+        if self.request.method == 'POST' and self.request.path == "/api/users/":
+            return (AllowAny(),)
+        return (IsAuthenticated(),)
+
     def get_queryset(self):
         """Get the queryset depending on the user permission
         """
@@ -103,6 +112,17 @@ class UserViewSet(viewsets.ModelViewSet):
                elem.minimum_score <= query['score']:
                 result.add(elem.user_id)
         return Response(self.get_serializer(result, many=True).data)
+
+    def create(self, request):
+        """Create a new user
+        """
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
 
 class UserProgramsViewSet(viewsets.ModelViewSet):
     """View for users programs
