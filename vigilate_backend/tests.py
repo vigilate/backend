@@ -6,11 +6,15 @@ from rest_framework.test import APITestCase, APIClient
 from vigilate_backend import models
 
 def debug_print(msg, var):
+    """Print debug information
+    """
     print(file=sys.stderr)
     print(msg, var, file=sys.stderr)
     print(file=sys.stderr)
 
 class UserProgramsTestCase(APITestCase):
+    """Test case for user programs
+    """
     def setUp(self):
         self.client = APIClient()
 

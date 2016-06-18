@@ -2,6 +2,8 @@ from rest_framework import serializers
 from vigilate_backend import models
 
 class VulnSerializer(serializers.ModelSerializer):
+    """Serialisation of vuln
+    """
 
     class Meta:
         model = models.Vuln
@@ -9,9 +11,13 @@ class VulnSerializer(serializers.ModelSerializer):
                   'detail', 'simple_detail', 'concerned_cpe', 'score')
 
     def create(self, validated_data):
+        """Create a vuln
+        """
         return models.Vuln.objects.create(**validated_data)
 
     def update(self, instance, validated_data):
+        """Update a vuln
+        """
         instance.cveid = validated_data.get('cveid', instance.cveid)
         instance.program_name = validated_data.get('program_name', instance.program_name)
         instance.program_version = validated_data.get('program_version', instance.program_version)
@@ -23,12 +29,16 @@ class VulnSerializer(serializers.ModelSerializer):
         return instance
 
 class UserSerializer(serializers.ModelSerializer):
+    """Serialisation of User
+    """
 
     class Meta:
         model = models.User
         fields = ('id', 'username', 'email', 'password', 'user_type', 'contrat', 'id_dealer')
 
     def create(self, validated_data):
+        """Create an user
+        """
 
         data = {k:v for k, v in validated_data.items() if k != "password"}
         user = models.User.objects.create(**data)
@@ -38,6 +48,9 @@ class UserSerializer(serializers.ModelSerializer):
         return user
 
     def update(self, instance, validated_data):
+        """Update un user
+        """
+        
         instance.id = validated_data.get('id', instance.id)
         instance.username = validated_data.get('username', instance.username)
         instance.email = validated_data.get('email', instance.email)
@@ -50,15 +63,21 @@ class UserSerializer(serializers.ModelSerializer):
         return instance
 
 class UserProgramsSerializer(serializers.ModelSerializer):
-
+    """Serialisation of user program
+    """
+    
     class Meta:
         model = models.UserPrograms
         fields = ('id', 'program_name', 'program_version', 'minimum_score', 'user_id')
 
     def create(self, validated_data):
+        """Create an user program
+        """
         return models.UserPrograms.objects.create(**validated_data)
 
     def update(self, instance, validated_data):
+        """Update an user program
+        """
         instance.id = validated_data.get('id', instance.id)
         instance.program_name = validated_data.get('program_name', instance.program_name)
         instance.program_version = validated_data.get('program_version', instance.program_version)
@@ -68,15 +87,21 @@ class UserProgramsSerializer(serializers.ModelSerializer):
         return instance
 
 class AlertSerializer(serializers.ModelSerializer):
-
+    """Serialisation of user alerts
+    """
+    
     class Meta:
         model = models.Alert
         fields = ('id', 'user', 'program', 'vuln')
 
     def create(self, validated_data):
+        """Create an alert
+        """
         return models.Alert.objects.create(**validated_data)
 
     def update(self, instance, validated_data):
+        """Update an alert
+        """
         instance.id = validated_data.get('id', instance.id)
         instance.user = validated_data.get('user', instance.user)
         instance.program = validated_data.get('program', instance.program)

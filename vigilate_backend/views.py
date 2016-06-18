@@ -14,10 +14,14 @@ from lib.core.methods import *
 
 
 def home(request):
+    """Vigilate root url content
+    """
     text = """VIGILATE 1337"""
     return HttpResponse(text)
 
 class VulnViewSet(viewsets.ModelViewSet):
+    """View for vulnerabilities
+    """
     queryset = Vuln.objects.all()
     serializer_class = VulnSerializer
 
@@ -25,6 +29,8 @@ class VulnViewSet(viewsets.ModelViewSet):
     #/api/vulnz/scan_program/
     @list_route(methods=['post'])
     def scan_program(self, request):
+        """Return vulnerabilities concerning a given program
+        """
 
         result = set()
         query = get_query(request)
@@ -46,7 +52,8 @@ class VulnViewSet(viewsets.ModelViewSet):
     # /api/vulnz/user_vulnerabilities ---> query={"user_id": 0}
     @list_route(methods=['post'])
     def user_vulnerabilities(self, request):
-
+        """Get vulnerabilities if prog version < vuln version
+        """
         user_vulns = set()
         query = get_query(request)
         if not query:
@@ -64,11 +71,15 @@ class VulnViewSet(viewsets.ModelViewSet):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 class UserViewSet(viewsets.ModelViewSet):
+    """View for users
+    """
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
 
     def list(self, request):
+        """List users
+        """
         superuser = False
         try:
             UserDjango.objects.get(username=request.user)
@@ -87,7 +98,8 @@ class UserViewSet(viewsets.ModelViewSet):
     # /api/users/scan_cve/
     @list_route(methods=['post'])
     def scan_cve(self, request):
-
+        """Add a vuln
+        """
         result = set()
         query = get_query(request)
         if not query:
@@ -103,10 +115,14 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response(self.get_serializer(result, many=True).data)
 
 class UserProgramsViewSet(viewsets.ModelViewSet):
+    """View for users programs
+    """
     queryset = UserPrograms.objects.all()
     serializer_class = UserProgramsSerializer
 
     def list(self, request):
+        """List user programs
+        """
         superuser = False
         try:
             UserDjango.objects.get(username=request.user)
@@ -126,6 +142,8 @@ class UserProgramsViewSet(viewsets.ModelViewSet):
     # /api/uprog/submit_programs/
     @list_route(methods=['post'])
     def submit_programs(self, request):
+        """Sens multiple program at once
+        """
         result = set()
         query = get_query(request)
         if not query:
@@ -154,10 +172,14 @@ class UserProgramsViewSet(viewsets.ModelViewSet):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 class AlertViewSet(viewsets.ModelViewSet):
+    """View for alerts
+    """
     queryset = Alert.objects.all()
     serializer_class = AlertSerializer
 
     def list(self, request):
+        """List alerts
+        """
         superuser = False
         try:
             UserDjango.objects.get(username=request.user)
@@ -178,6 +200,8 @@ class AlertViewSet(viewsets.ModelViewSet):
     # get a CVE-ID, find CPE, and return alerts
     @list_route(methods=['post'])
     def scan_cve(self, request):
+        """Add a CVE and return alerts
+        """
         result = set()
         progs = set()
 

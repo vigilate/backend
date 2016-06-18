@@ -5,8 +5,12 @@ from rest_framework import exceptions
 from vigilate_backend.models import User
 
 class VigilateAuthentication(authentication.BasicAuthentication):
+    """Vigilate authentication class using pyargon2
+    """
 
     def authenticate(self, request):
+        """Check authentication of each request
+        """
         authheader = request.META.get('HTTP_AUTHORIZATION', '')
         if not authheader:
             return None

@@ -6,6 +6,8 @@ from django.db import models
 
 # Create your models here.
 class Vuln(models.Model):
+    """Vuln model
+    """
     cveid = models.CharField(max_length=20, unique=True)
     program_name = models.CharField(max_length=100)
     program_version = models.CharField(max_length=100)
@@ -16,6 +18,9 @@ class Vuln(models.Model):
     score = models.IntegerField()
 
 class User(models.Model):
+    """User model
+    """
+    
     id = models.AutoField(primary_key=True, unique=True)
     username = models.CharField(max_length=20, unique=True)
     email = models.CharField(max_length=50, unique=True)
@@ -25,12 +30,18 @@ class User(models.Model):
     id_dealer = models.IntegerField()
 
     def is_authenticated(self):
+        """Check if the user is authenticated
+        """
         return True
 
     def has_perms(self, perm, obj=None):
+        """Check if the user have permission
+        """
         return True
 
     def set_password(self, password):
+        """Set the user password
+        """
         charset = string.digits + string.ascii_letters
 
         salt = ''.join([random.choice(charset) for _ in range(10)])
@@ -39,6 +50,8 @@ class User(models.Model):
         self.password = hsh
 
     def check_password(self, pwd):
+        """Check if the given password match the real one
+        """
         salt, hsh = self.password.split("$", 1)
         ret = PyArgon2.Check_pwd(pwd.encode(), salt.encode(), binascii.unhexlify(hsh))
         return ret
@@ -47,6 +60,9 @@ class User(models.Model):
 
 
 class UserPrograms(models.Model):
+    """User programs model
+    """
+    
     id = models.AutoField(primary_key=True, unique=True)
     program_name = models.CharField(max_length=100)
     program_version = models.CharField(max_length=100)
@@ -61,6 +77,9 @@ class UserPrograms(models.Model):
             return nb_obj + 1
 
 class Alert(models.Model):
+    """Alert model
+    """
+    
     id = models.AutoField(primary_key=True, unique=True)
     user = models.ForeignKey('User')
     program = models.ForeignKey('UserPrograms')

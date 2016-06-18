@@ -1,6 +1,8 @@
 import json
 
 def get_query(request):
+    """Parse a query
+    """
     if request.method == "POST":
         query = list(request.data)[0]
         if query:
@@ -19,6 +21,8 @@ def get_query(request):
     return None
 
 def parse_cpe(cpe):
+    """Parse a cpe
+    """
     res = {}
     cpe = [elem.split('_')[0] for elem in cpe.split(':') if elem]
     res['devlopper'] = cpe[2]
