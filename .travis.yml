@@ -22,3 +22,8 @@ before_script:
   - python3 ./vfeedcli.py -u || echo ignore output of feedcli.py
 script:
   - python3 manage.py test vigilate_backend/
+
+after_success:
+  - if [[ $TRAVIS_PYTHON_VERSION == 3.5* ]]; then
+      coveralls;
+    fi

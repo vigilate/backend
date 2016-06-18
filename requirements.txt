@@ -22,3 +22,4 @@ virtualenv==13.1.2
 Werkzeug==0.10.4
 django-nose==1.4.3
 coverage==4.1
+coveralls==1.1
