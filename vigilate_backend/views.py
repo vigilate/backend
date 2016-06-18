@@ -24,7 +24,7 @@ class VulnViewSet(viewsets.ModelViewSet):
     """
     queryset = Vuln.objects.all()
     serializer_class = VulnSerializer
-
+    
     # POST a program query={"program_name" :"", "version" : "", ...} -> return vulnerabilities concerning a given program
     #/api/vulnz/scan_program/
     @list_route(methods=['post'])
@@ -73,25 +73,15 @@ class VulnViewSet(viewsets.ModelViewSet):
 class UserViewSet(viewsets.ModelViewSet):
     """View for users
     """
-    queryset = User.objects.all()
     serializer_class = UserSerializer
 
-
-    def list(self, request):
-        """List users
+    def get_queryset(self):
+        """Get the queryset depending on the user permission
         """
-        superuser = False
-        try:
-            UserDjango.objects.get(username=request.user)
-            superuser = True
-        except UserDjango.DoesNotExist:
-            pass
-
-        if not superuser:
-            queryset = User.objects.filter(id=request.user.id)
+        if self.request.user.is_superuser:
+            return User.objects.all()
         else:
-            queryset = User.objects.all()
-        return Response(self.get_serializer(queryset, many=True).data)
+            return User.objects.filter(id=self.request.user.id)
 
 
     # POST a vulnerability query={"program_name":"vigilate", "program_version":"54", "score":50} -> return concerned users
@@ -117,26 +107,16 @@ class UserViewSet(viewsets.ModelViewSet):
 class UserProgramsViewSet(viewsets.ModelViewSet):
     """View for users programs
     """
-    queryset = UserPrograms.objects.all()
+
     serializer_class = UserProgramsSerializer
 
-    def list(self, request):
-        """List user programs
+    def get_queryset(self):
+        """Get the queryset depending on the user permission
         """
-        superuser = False
-        try:
-            UserDjango.objects.get(username=request.user)
-            superuser = True
-        except UserDjango.DoesNotExist:
-            pass
-
-        if not superuser:
-            queryset = UserPrograms.objects.filter(user_id=request.user.id)
+        if self.request.user.is_superuser:
+            return UserPrograms.objects.all()
         else:
-            queryset = UserPrograms.objects.all()
-        return Response(self.get_serializer(queryset, many=True).data)
-
-
+            return UserPrograms.objects.filter(user_id=self.request.user.id)
 
     # POST query{"programs_list": [{"program_name":"toto", "program_version":"1.2.4.1"}]}'
     # /api/uprog/submit_programs/
@@ -174,24 +154,15 @@ class UserProgramsViewSet(viewsets.ModelViewSet):
 class AlertViewSet(viewsets.ModelViewSet):
     """View for alerts
     """
-    queryset = Alert.objects.all()
     serializer_class = AlertSerializer
 
-    def list(self, request):
-        """List alerts
+    def get_queryset(self):
+        """Get the queryset depending on the user permission
         """
-        superuser = False
-        try:
-            UserDjango.objects.get(username=request.user)
-            superuser = True
-        except UserDjango.DoesNotExist:
-            pass
-
-        if not superuser:
-            queryset = Alert.objects.filter(user_id=request.user.id)
+        if self.request.user.is_superuser:
+            return Alert.objects.all()
         else:
-            queryset = Alert.objects.all()
-        return Response(self.get_serializer(queryset, many=True).data)
+            return Alert.objects.filter(user_id=self.request.user.id)
 
 
     # POST query{"cveid": "CVE-2015-XXXX}

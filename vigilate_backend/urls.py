@@ -7,9 +7,9 @@ from vigilate_backend import views
 
 router = routers.DefaultRouter()
 router.register(r'vulnz', views.VulnViewSet)
-router.register(r'users', views.UserViewSet)
-router.register(r'uprog', views.UserProgramsViewSet)
-router.register(r'alerts', views.AlertViewSet)
+router.register(r'users', views.UserViewSet, "User")
+router.register(r'uprog', views.UserProgramsViewSet, "UserPrograms")
+router.register(r'alerts', views.AlertViewSet, "Alert")
 
 urlpatterns = [
     url('^api/', include(router.urls)),

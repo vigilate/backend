@@ -29,6 +29,8 @@ class User(models.Model):
     contrat = models.IntegerField(null=False)
     id_dealer = models.IntegerField()
 
+    is_superuser = False
+
     def is_authenticated(self):
         """Check if the user is authenticated
         """
