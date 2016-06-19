@@ -94,7 +94,7 @@ DATABASES = {
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/
 
-LANGUAGE_CODE = 'fr-FR'
+LANGUAGE_CODE = 'en-EN'
 
 TIME_ZONE = 'UTC'
 
@@ -113,8 +113,7 @@ STATIC_ROOT = 'static'
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
-        'rest_framework.permissions.DjangoModelPermissions'
+        'vigilate_backend.customPermissions.IsAuthenticatedOrOptions',
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'vigilate_backend.VigilateAuthentication.VigilateAuthentication',

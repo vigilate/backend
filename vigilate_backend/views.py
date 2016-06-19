@@ -82,7 +82,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
         if self.request.method == 'POST' and self.request.path == "/api/users/":
             return (AllowAny(),)
-        return (IsAuthenticated(),)
+        return [perm() for perm in self.permission_classes]
 
     def get_queryset(self):
         """Get the queryset depending on the user permission
