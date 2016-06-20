@@ -5,16 +5,7 @@ from django.contrib.auth.models import User
 from rest_framework.test import APITestCase, APIClient
 from vigilate_backend import models
 
-def debug_print(msg, var):
-    """Print debug information
-    """
-    print(file=sys.stderr)
-    print(msg, var, file=sys.stderr)
-    print(file=sys.stderr)
-
 class UserProgramsTestCase(APITestCase):
-    """Test case for user programs
-    """
     def setUp(self):
         self.client = APIClient()
 
@@ -52,11 +43,10 @@ class UserProgramsTestCase(APITestCase):
         resp_vulnz = self.client.get("/api/vulnz/")
         self.assertTrue(resp_vulnz.status_code == 200)
 
-    # fix db problems before to test this one
-    # def test_route_users(self):
-    #     self.client.login(username="test", password="test")
-    #     resp_users = self.client.get("/api/users/")
-    #     self.assertTrue(resp_users.status_code == 200)
+    def test_route_users(self):
+        self.client.login(username="test", password="test")
+        resp_users = self.client.get("/api/users/")
+        self.assertTrue(resp_users.status_code == 200)
 
     def test_submit_one_program(self):
         self.client.login(username="test", password="test")
@@ -81,7 +71,7 @@ class UserProgramsTestCase(APITestCase):
 
         prog_list = {"programs_list" :
                      [
-                         {"program_name" : "Mozilla Firefox", "program_version" : "31.0"},
+                         {"program_name" : "mozilla firefox", "program_version" : "31.0"},
                          {"program_name" : "blabla", "program_version" : "2.0.1"}
                      ]}
 
@@ -98,4 +88,24 @@ class UserProgramsTestCase(APITestCase):
         for sent in prog_list['programs_list']:
             self.assertTrue(sent in database_programs_json)
 
-        
+    def test_create_alerts_from_cve(self):
+        self.client.login(username="test", password="test")
+
+        prog_list = {"programs_list" :
+                     [
+                         {"program_name" : "mozilla firefox", "program_version" : "45.0.2"}
+                     ]}
+
+        resp = self.client.post("/api/uprog/submit_programs/", json.dumps(prog_list),
+                                content_type="application/x-www-form-urlencoded")
+
+        cve = {"cveid" : "CVE-2016-2817"}
+        resp_alerts = self.client.post("/api/alerts/scan_cve/", json.dumps(cve),
+                                      content_type="application/x-www-form-urlencoded")
+
+        self.assertTrue(resp_alerts.status_code == 200)
+
+        generated_alert = models.Alert.objects.filter(user_id=self.new_client.id)[0]
+
+        self.assertTrue(generated_alert.program.program_name == prog_list["programs_list"][0]["program_name"])
+        self.assertTrue(generated_alert.vuln.cveid == cve["cveid"])
