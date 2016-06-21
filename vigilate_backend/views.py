@@ -4,8 +4,9 @@ from django.db import IntegrityError
 from django.db.models import Q
 from django.contrib.auth.models import User as UserDjango
 from rest_framework import viewsets, status
-from rest_framework.decorators import list_route
+from rest_framework.decorators import list_route, permission_classes
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from pkg_resources import parse_version
 from vigilate_backend.utils import get_query, parse_cpe
 from vigilate_backend.models import Vuln, User, UserPrograms, Alert
@@ -14,17 +15,23 @@ from lib.core.methods import *
 
 
 def home(request):
+    """Vigilate root url content
+    """
     text = """VIGILATE 1337"""
     return HttpResponse(text)
 
 class VulnViewSet(viewsets.ModelViewSet):
+    """View for vulnerabilities
+    """
     queryset = Vuln.objects.all()
     serializer_class = VulnSerializer
-
+    
     # POST a program query={"program_name" :"", "version" : "", ...} -> return vulnerabilities concerning a given program
     #/api/vulnz/scan_program/
     @list_route(methods=['post'])
     def scan_program(self, request):
+        """Return vulnerabilities concerning a given program
+        """
 
         result = set()
         query = get_query(request)
@@ -46,7 +53,8 @@ class VulnViewSet(viewsets.ModelViewSet):
     # /api/vulnz/user_vulnerabilities ---> query={"user_id": 0}
     @list_route(methods=['post'])
     def user_vulnerabilities(self, request):
-
+        """Get vulnerabilities if prog version < vuln version
+        """
         user_vulns = set()
         query = get_query(request)
         if not query:
@@ -64,30 +72,33 @@ class VulnViewSet(viewsets.ModelViewSet):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 class UserViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all()
+    """View for users
+    """
     serializer_class = UserSerializer
 
+    def get_permissions(self):
+        """Allow non-authenticated user to create an account
+        """
 
-    def list(self, request):
-        superuser = False
-        try:
-            UserDjango.objects.get(username=request.user)
-            superuser = True
-        except UserDjango.DoesNotExist:
-            pass
+        if self.request.method == 'POST' and self.request.path == "/api/users/":
+            return (AllowAny(),)
+        return [perm() for perm in self.permission_classes]
 
-        if not superuser:
-            queryset = User.objects.filter(id=request.user.id)
+    def get_queryset(self):
+        """Get the queryset depending on the user permission
+        """
+        if self.request.user.is_superuser:
+            return User.objects.all()
         else:
-            queryset = User.objects.all()
-        return Response(self.get_serializer(queryset, many=True).data)
+            return User.objects.filter(id=self.request.user.id)
 
 
     # POST a vulnerability query={"program_name":"vigilate", "program_version":"54", "score":50} -> return concerned users
     # /api/users/scan_cve/
     @list_route(methods=['post'])
     def scan_cve(self, request):
-
+        """Add a vuln
+        """
         result = set()
         query = get_query(request)
         if not query:
@@ -102,30 +113,37 @@ class UserViewSet(viewsets.ModelViewSet):
                 result.add(elem.user_id)
         return Response(self.get_serializer(result, many=True).data)
 
+    def create(self, request):
+        """Create a new user
+        """
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
 class UserProgramsViewSet(viewsets.ModelViewSet):
-    queryset = UserPrograms.objects.all()
+    """View for users programs
+    """
+
     serializer_class = UserProgramsSerializer
 
-    def list(self, request):
-        superuser = False
-        try:
-            UserDjango.objects.get(username=request.user)
-            superuser = True
-        except UserDjango.DoesNotExist:
-            pass
-
-        if not superuser:
-            queryset = UserPrograms.objects.filter(user_id=request.user.id)
+    def get_queryset(self):
+        """Get the queryset depending on the user permission
+        """
+        if self.request.user.is_superuser:
+            return UserPrograms.objects.all()
         else:
-            queryset = UserPrograms.objects.all()
-        return Response(self.get_serializer(queryset, many=True).data)
-
-
+            return UserPrograms.objects.filter(user_id=self.request.user.id)
 
     # POST query{"programs_list": [{"program_name":"toto", "program_version":"1.2.4.1"}]}'
     # /api/uprog/submit_programs/
     @list_route(methods=['post'])
     def submit_programs(self, request):
+        """Sens multiple program at once
+        """
         result = set()
         query = get_query(request)
         if not query:
@@ -154,22 +172,17 @@ class UserProgramsViewSet(viewsets.ModelViewSet):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 class AlertViewSet(viewsets.ModelViewSet):
-    queryset = Alert.objects.all()
+    """View for alerts
+    """
     serializer_class = AlertSerializer
 
-    def list(self, request):
-        superuser = False
-        try:
-            UserDjango.objects.get(username=request.user)
-            superuser = True
-        except UserDjango.DoesNotExist:
-            pass
-
-        if not superuser:
-            queryset = Alert.objects.filter(user_id=request.user.id)
+    def get_queryset(self):
+        """Get the queryset depending on the user permission
+        """
+        if self.request.user.is_superuser:
+            return Alert.objects.all()
         else:
-            queryset = Alert.objects.all()
-        return Response(self.get_serializer(queryset, many=True).data)
+            return Alert.objects.filter(user_id=self.request.user.id)
 
 
     # POST query{"cveid": "CVE-2015-XXXX}
@@ -178,11 +191,13 @@ class AlertViewSet(viewsets.ModelViewSet):
     # get a CVE-ID, find CPE, and return alerts
     @list_route(methods=['post'])
     def scan_cve(self, request):
+        """Add a CVE and return alerts
+        """
         result = set()
         progs = set()
 
         query = get_query(request)
-
+        
         if not query:
             return Response(status=status.HTTP_400_BAD_REQUEST)
         if "cveid" not in query:

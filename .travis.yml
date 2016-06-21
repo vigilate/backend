@@ -19,5 +19,6 @@ before_script:
   - mysql -e 'create database Vigilate;'
   - mkdir -p $HOME/lib/
   - INSTALL_DIR=$HOME/lib/ ./install-pyargon2.sh nosudo
+  - python3 ./vfeedcli.py -u || echo ignore output of feedcli.py
 script:
   - python3 manage.py test vigilate_backend/
