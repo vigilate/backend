@@ -54,7 +54,8 @@ class UserProgramsTestCase(APITestCase):
         prog_list = {"programs_list" :
                      [
                          {"program_name" : "Google Chrome", "program_version" : "51.0"}
-                     ]}
+                     ],
+                     "poste" : 1}
 
         resp = self.client.post("/api/uprog/submit_programs/", json.dumps(prog_list),
                                 content_type="application/x-www-form-urlencoded")
@@ -73,7 +74,8 @@ class UserProgramsTestCase(APITestCase):
                      [
                          {"program_name" : "mozilla firefox", "program_version" : "31.0"},
                          {"program_name" : "blabla", "program_version" : "2.0.1"}
-                     ]}
+                     ],
+                     "poste" : 1}
 
         resp = self.client.post("/api/uprog/submit_programs/", json.dumps(prog_list),
                                 content_type="application/x-www-form-urlencoded")
@@ -94,7 +96,8 @@ class UserProgramsTestCase(APITestCase):
         prog_list = {"programs_list" :
                      [
                          {"program_name" : "mozilla firefox", "program_version" : "45.0.2"}
-                     ]}
+                     ],
+                     "poste" : 1}
 
         resp = self.client.post("/api/uprog/submit_programs/", json.dumps(prog_list),
                                 content_type="application/x-www-form-urlencoded")
