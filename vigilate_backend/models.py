@@ -70,6 +70,7 @@ class UserPrograms(models.Model):
     program_version = models.CharField(max_length=100)
     minimum_score = models.IntegerField(null=False)
     user_id = models.ForeignKey('User')
+    poste = models.IntegerField()
 
     def next_id():
         nb_obj = UserPrograms.objects.count()
