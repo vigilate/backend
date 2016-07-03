@@ -4,6 +4,8 @@ def get_query(request):
     """Parse a query
     """
     if request.method == "POST":
+        if "application/json" in request.content_type:
+            return request.data
         query = list(request.data)[0]
         if query:
             try:
