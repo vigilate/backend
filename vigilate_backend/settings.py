@@ -39,6 +39,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'rest_framework',
     'vigilate_backend',
+    'vulnerability_manager',
     'django_nose'
 )
 
