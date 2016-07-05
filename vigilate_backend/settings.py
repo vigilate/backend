@@ -40,7 +40,7 @@ INSTALLED_APPS = (
     'rest_framework',
     'vigilate_backend',
     'vulnerability_manager',
-    'django_nose'
+    'django_nose',
 )
 
 MIDDLEWARE_CLASSES = (

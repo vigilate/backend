@@ -71,13 +71,7 @@ class UserPrograms(models.Model):
     minimum_score = models.IntegerField(null=False)
     user_id = models.ForeignKey('User')
     poste = models.IntegerField()
-
-    def next_id():
-        nb_obj = UserPrograms.objects.count()
-        if nb_obj is None:
-            return 1
-        else:
-            return nb_obj + 1
+    cpe = models.ManyToManyField('vulnerability_manager.Cpe')
 
 class Alert(models.Model):
     """Alert model
