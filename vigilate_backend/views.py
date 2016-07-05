@@ -11,7 +11,6 @@ from pkg_resources import parse_version
 from vigilate_backend.utils import get_query, parse_cpe
 from vigilate_backend.models import Vuln, User, UserPrograms, Alert
 from vigilate_backend.serializers import VulnSerializer, UserSerializer, UserProgramsSerializer, AlertSerializer
-from lib.core.methods import *
 
 
 def home(request):
@@ -180,58 +179,58 @@ class AlertViewSet(viewsets.ModelViewSet):
     # /api/alerts/scan_cve/
 
     # get a CVE-ID, find CPE, and return alerts
-    @list_route(methods=['post'])
-    def scan_cve(self, request):
-        """Add a CVE and return alerts
-        """
-        result = set()
-        progs = set()
+    # @list_route(methods=['post'])
+    # def scan_cve(self, request):
+    #     """Add a CVE and return alerts
+    #     """
+    #     result = set()
+    #     progs = set()
 
-        query = get_query(request)
+    #     query = get_query(request)
         
-        if not query:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-        if "cveid" not in query:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+    #     if not query:
+    #         return Response(status=status.HTTP_400_BAD_REQUEST)
+    #     if "cveid" not in query:
+    #         return Response(status=status.HTTP_404_NOT_FOUND)
 
-        cpe_list = CveInfo(query['cveid']).get_cpe()
-        cpe_json = json.loads(cpe_list)
+    #     cpe_list = CveInfo(query['cveid']).get_cpe()
+    #     cpe_json = json.loads(cpe_list)
 
-        # Get users programs
-        for elem in cpe_json:
-            cpe = parse_cpe(elem['id'])
+    #     # Get users programs
+    #     for elem in cpe_json:
+    #         cpe = parse_cpe(elem['id'])
 
-            for uprog in UserPrograms.objects.filter(
-                    Q(program_name__icontains=cpe['software']) & Q(program_name__icontains=cpe['devlopper'])):
+    #         for uprog in UserPrograms.objects.filter(
+    #                 Q(program_name__icontains=cpe['software']) & Q(program_name__icontains=cpe['devlopper'])):
 
-                if parse_version(cpe['version']) == parse_version(uprog.program_version):
-                    progs.add(uprog)
+    #             if parse_version(cpe['version']) == parse_version(uprog.program_version):
+    #                 progs.add(uprog)
 
-        if not len(Vuln.objects.filter(cveid=query['cveid'])):
-            new_vuln = Vuln()
-            new_vuln.cveid = query['cveid']
-            new_vuln.program_name = cpe['devlopper']+"-"+cpe['software']
-            new_vuln.program_version = cpe['version']
+    #     if not len(Vuln.objects.filter(cveid=query['cveid'])):
+    #         new_vuln = Vuln()
+    #         new_vuln.cveid = query['cveid']
+    #         new_vuln.program_name = cpe['devlopper']+"-"+cpe['software']
+    #         new_vuln.program_version = cpe['version']
 
-            # To modify
-            new_vuln.detail = "None"
-            new_vuln.simple_detail = "None"
-            new_vuln.concerned_cpe = "None"
-            new_vuln.score = 1
-            new_vuln.save()
+    #         # To modify
+    #         new_vuln.detail = "None"
+    #         new_vuln.simple_detail = "None"
+    #         new_vuln.concerned_cpe = "None"
+    #         new_vuln.score = 1
+    #         new_vuln.save()
 
-        # Create and return alerts if they do not already exists
-        for uprog in progs:
-            elem = Alert()
-            elem.user = uprog.user_id
-            elem.program = uprog
-            elem.vuln = Vuln.objects.filter(cveid=query['cveid'])[0]
-            try:
-                elem.save()
-                result.add(elem)
-            except IntegrityError:
-                continue
+    #     # Create and return alerts if they do not already exists
+    #     for uprog in progs:
+    #         elem = Alert()
+    #         elem.user = uprog.user_id
+    #         elem.program = uprog
+    #         elem.vuln = Vuln.objects.filter(cveid=query['cveid'])[0]
+    #         try:
+    #             elem.save()
+    #             result.add(elem)
+    #         except IntegrityError:
+    #             continue
 
-        # Save a vulnerability if it's actually not in db ?
-        return Response(self.get_serializer(result, many=True).data)
+    #     # Save a vulnerability if it's actually not in db ?
+    #     return Response(self.get_serializer(result, many=True).data)
 
