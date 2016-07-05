@@ -17,6 +17,8 @@ urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
     url(r'^$', views.home),
     url('^update_cpe$', views_vuln_m.update_cpe),
-    url('^update_cve$', views_vuln_m.update_cve),
+    url('^update_recent_cve$', views_vuln_m.update_recent_cve),
+    url('^update_all_cve$', views_vuln_m.update_all_cve),
+    url('^update_all_cve_using_files$', views_vuln_m.update_all_cve_using_files),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 ]
