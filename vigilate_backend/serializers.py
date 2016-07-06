@@ -1,33 +1,6 @@
 from rest_framework import serializers
 from vigilate_backend import models
 
-class VulnSerializer(serializers.ModelSerializer):
-    """Serialisation of vuln
-    """
-
-    class Meta:
-        model = models.Vuln
-        fields = ('id', 'cveid', 'program_name', 'program_version', 'date',
-                  'detail', 'simple_detail', 'concerned_cpe', 'score')
-
-    def create(self, validated_data):
-        """Create a vuln
-        """
-        return models.Vuln.objects.create(**validated_data)
-
-    def update(self, instance, validated_data):
-        """Update a vuln
-        """
-        instance.cveid = validated_data.get('cveid', instance.cveid)
-        instance.program_name = validated_data.get('program_name', instance.program_name)
-        instance.program_version = validated_data.get('program_version', instance.program_version)
-        instance.date = validated_data.get('date', instance.date)
-        instance.detail = validated_data.get('detail', instance.detail)
-        instance.simple_detail = validated_data.get('simple_detail', instance.simple_detail)
-        instance.score = validated_data.get('score', instance.score)
-        instance.save()
-        return instance
-
 class UserSerializer(serializers.ModelSerializer):
     """Serialisation of User
     """
@@ -93,7 +66,7 @@ class AlertSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = models.Alert
-        fields = ('id', 'user', 'program', 'vuln')
+        fields = ('id', 'user', 'program', 'cpe')
 
     def create(self, validated_data):
         """Create an alert
@@ -106,6 +79,6 @@ class AlertSerializer(serializers.ModelSerializer):
         instance.id = validated_data.get('id', instance.id)
         instance.user = validated_data.get('user', instance.user)
         instance.program = validated_data.get('program', instance.program)
-        instance.vuln = validated_data.get('vuln', instance.vuln)
+        instance.cpe = validated_data.get('cpe', instance.cpe)
         instance.save()
         return instance
