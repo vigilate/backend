@@ -38,11 +38,6 @@ class UserProgramsTestCase(APITestCase):
         resp_progs = self.client.get("/api/uprog/")
         self.assertTrue(resp_progs.status_code == 200)
 
-    def test_route_vulnz(self):
-        self.client.login(username="test", password="test")
-        resp_vulnz = self.client.get("/api/vulnz/")
-        self.assertTrue(resp_vulnz.status_code == 200)
-
     def test_route_users(self):
         self.client.login(username="test", password="test")
         resp_users = self.client.get("/api/users/")
@@ -109,26 +104,3 @@ class UserProgramsTestCase(APITestCase):
 
         for sent in prog_list['programs_list']:
             self.assertTrue(sent in database_programs_json)
-
-    # def test_create_alerts_from_cve(self):
-    #     self.client.login(username="test", password="test")
-
-    #     prog_list = {"programs_list" :
-    #                  [
-    #                      {"program_name" : "mozilla firefox", "program_version" : "45.0.2"}
-    #                  ],
-    #                  "poste" : 1}
-
-    #     resp = self.client.post("/api/uprog/submit_programs/", json.dumps(prog_list),
-    #                             content_type="application/x-www-form-urlencoded")
-
-    #     cve = {"cveid" : "CVE-2016-2817"}
-    #     resp_alerts = self.client.post("/api/alerts/scan_cve/", json.dumps(cve),
-    #                                   content_type="application/x-www-form-urlencoded")
-
-    #     self.assertTrue(resp_alerts.status_code == 200)
-
-    #     generated_alert = models.Alert.objects.filter(user_id=self.new_client.id)[0]
-
-    #     self.assertTrue(generated_alert.program.program_name == prog_list["programs_list"][0]["program_name"])
-    #     self.assertTrue(generated_alert.vuln.cveid == cve["cveid"])

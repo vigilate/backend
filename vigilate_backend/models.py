@@ -5,17 +5,6 @@ import PyArgon2
 from django.db import models
 
 # Create your models here.
-class Vuln(models.Model):
-    """Vuln model
-    """
-    cveid = models.CharField(max_length=20, unique=True)
-    program_name = models.CharField(max_length=100)
-    program_version = models.CharField(max_length=100)
-    date = models.DateTimeField(auto_now_add=True, auto_now=False, verbose_name="Date de parution")
-    detail = models.TextField(null=True)
-    simple_detail = models.TextField(null=True)
-    concerned_cpe = models.TextField(null=True)
-    score = models.IntegerField()
 
 class User(models.Model):
     """User model
@@ -80,6 +69,6 @@ class Alert(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
     user = models.ForeignKey('User')
     program = models.ForeignKey('UserPrograms')
-    vuln = models.ForeignKey('Vuln')
+    cve = models.ForeignKey('vulnerability_manager.Cve')
     class Meta:
-        unique_together = ["user", "program", "vuln"]
+        unique_together = ["user", "program", "cve"]

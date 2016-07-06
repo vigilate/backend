@@ -7,7 +7,6 @@ from vigilate_backend import views as views
 from vulnerability_manager import views as views_vuln_m
 
 router = routers.DefaultRouter()
-router.register(r'vulnz', views.VulnViewSet)
 router.register(r'users', views.UserViewSet, "User")
 router.register(r'uprog', views.UserProgramsViewSet, "UserPrograms")
 router.register(r'alerts', views.AlertViewSet, "Alert")
