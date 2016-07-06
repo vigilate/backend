@@ -70,5 +70,3 @@ class Alert(models.Model):
     user = models.ForeignKey('User')
     program = models.ForeignKey('UserPrograms')
     cve = models.ForeignKey('vulnerability_manager.Cve')
-    class Meta:
-        unique_together = ["user", "program", "cve"]
