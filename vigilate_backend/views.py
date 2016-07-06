@@ -11,6 +11,7 @@ from pkg_resources import parse_version
 from vigilate_backend.utils import get_query, parse_cpe
 from vigilate_backend.models import User, UserPrograms, Alert
 from vigilate_backend.serializers import UserSerializer, UserProgramsSerializer, AlertSerializer
+from vigilate_backend import alerts
 from vulnerability_manager import cpe_updater
 
 def home(request):
@@ -82,6 +83,7 @@ class UserProgramsViewSet(viewsets.ModelViewSet):
                             (cpes, up_to_date) = cpe_updater.get_cpes_from_name_version(elem['program_name'], elem['program_version'], up_to_date)
                             prog.cpe.set(cpes)
                             prog.save()
+                        alerts.check_prog(prog, request.user)
                     else:
                         #else: add a new program
 
@@ -90,7 +92,8 @@ class UserProgramsViewSet(viewsets.ModelViewSet):
                         new_prog.save()
                         (cpes, up_to_date) =  cpe_updater.get_cpes_from_name_version(elem['program_name'], elem['program_version'], up_to_date)
                         new_prog.cpe.set(cpes)
-
+                        alerts.check_prog(new_prog, request.user)
+                        
             return Response(status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
