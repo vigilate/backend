@@ -96,8 +96,8 @@ class UserProgramsViewSet(viewsets.ModelViewSet):
                     prog_changed = True
                     prog.program_version = elem['program_version']
                     prog.cpe.clear()
-                    (cpes, up_to_date) = cpe_updater.get_cpes_from_name_version(elem['program_name'], elem['program_version'], up_to_date)
-                    prog.cpe.set(cpes)
+                    (cpe, up_to_date) = cpe_updater.get_cpes_from_name_version(elem['program_name'], elem['program_version'], up_to_date)
+                    prog.cpe = cpe
                 if 'minimum_score' in elem and prog.minimum_score != int(elem['minimum_score']):
                     prog_changed = True
                     prog.minimum_score = int(elem['minimum_score'])
@@ -107,20 +107,21 @@ class UserProgramsViewSet(viewsets.ModelViewSet):
             else:
                 #else: add a new program
 
+                (cpe, up_to_date) =  cpe_updater.get_cpe_from_name_version(elem['program_name'], elem['program_version'], up_to_date)
+
                 new_prog = UserPrograms(user_id=request.user, minimum_score=1, poste=query['poste'],
-                                        program_name=elem['program_name'], program_version=elem['program_version'])
+                                        program_name=elem['program_name'], program_version=elem['program_version'], cpe=cpe)
                 if 'minimum_score' in elem:
                     new_prog.minimum_score = int(elem['minimum_score'])
 
                 new_prog.save()
-                (cpes, up_to_date) =  cpe_updater.get_cpes_from_name_version(elem['program_name'], elem['program_version'], up_to_date)
-                new_prog.cpe.set(cpes)
                 alerts.check_prog(new_prog, request.user)
 
             if only_one_program:
                 obj = UserPrograms.objects.get(user_id=request.user.id, program_name=elem['program_name'], poste=query['poste'])
                 serializer = self.get_serializer(obj)
                 return Response(serializer.data, status=status.HTTP_200_OK)
+
         return Response(status=status.HTTP_200_OK)
 
 
