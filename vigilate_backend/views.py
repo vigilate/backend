@@ -57,45 +57,72 @@ class UserProgramsViewSet(viewsets.ModelViewSet):
         else:
             return UserPrograms.objects.filter(user_id=self.request.user.id)
 
-    # POST query{"programs_list": [{"program_name":"toto", "program_version":"1.2.4.1"}]}'
-    # /api/uprog/submit_programs/
-    @list_route(methods=['post'])
-    def submit_programs(self, request):
-        """Sens multiple program at once
+    def create(self, request):
+        """Create one or multiple program at once
         """
         result = set()
         query = get_query(request)
         if not query:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
-        if "programs_list" in query:
-            up_to_date = False
-            for elem in query['programs_list']:
-                if "program_name" in elem and "program_version" in elem:
-                    prog = UserPrograms.objects.filter(user_id=request.user.id, program_name=elem['program_name'], poste=query['poste'])
+        only_one_program = False
+        if not "programs_list" in query:
+            if not all(x in query for x in ['program_version', 'program_name', 'minimum_score']):
+                return Response(status=status.HTTP_400_BAD_REQUEST)
 
-                    # if prog , user is already monitoring the given program, update is needed
-                    if prog:
-                        prog = prog[0]
-                        if prog.program_version != elem['program_version']:
-                            prog.program_version = elem['program_version']
-                            prog.cpe.clear()
-                            (cpes, up_to_date) = cpe_updater.get_cpes_from_name_version(elem['program_name'], elem['program_version'], up_to_date)
-                            prog.cpe.set(cpes)
-                            prog.save()
-                        alerts.check_prog(prog, request.user)
-                    else:
-                        #else: add a new program
+            only_one_program = True
+            elem = {}
+            elem['program_version'] = query['program_version']
+            elem['program_name'] = query['program_name']
+            elem['program_score'] = query['minimum_score']
+            query['programs_list'] = [elem]
+            if UserPrograms.objects.filter(user_id=request.user.id, program_name=elem['program_name']).exists():
+                ret = {"detail": "Program %s already exists" % elem['program_name']}
+                return Response(ret, status=status.HTTP_400_BAD_REQUEST)
 
-                        new_prog = UserPrograms(user_id=request.user, minimum_score=1, poste=query['poste'],
-                                                program_name=elem['program_name'], program_version=elem['program_version'])
-                        new_prog.save()
-                        (cpes, up_to_date) =  cpe_updater.get_cpes_from_name_version(elem['program_name'], elem['program_version'], up_to_date)
-                        new_prog.cpe.set(cpes)
-                        alerts.check_prog(new_prog, request.user)
-                        
-            return Response(status=status.HTTP_200_OK)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+        for elem in query['programs_list']:
+            if not all(x in elem for x in ['program_version', 'program_name']):
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        up_to_date = False
+        for elem in query['programs_list']:
+            prog = UserPrograms.objects.filter(user_id=request.user.id, program_name=elem['program_name'], poste=query['poste'])
+
+            # if prog , user is already monitoring the given program, update is needed
+            if prog:
+                prog = prog[0]
+                prog_changed = False
+                if prog.program_version != elem['program_version']:
+                    prog_changed = True
+                    prog.program_version = elem['program_version']
+                    prog.cpe.clear()
+                    (cpes, up_to_date) = cpe_updater.get_cpes_from_name_version(elem['program_name'], elem['program_version'], up_to_date)
+                    prog.cpe.set(cpes)
+                if 'minimum_score' in elem and prog.minimum_score != int(elem['minimum_score']):
+                    prog_changed = True
+                    prog.minimum_score = int(elem['minimum_score'])
+                if prog_changed:
+                    prog.save()
+                    alerts.check_prog(prog, request.user)
+            else:
+                #else: add a new program
+
+                new_prog = UserPrograms(user_id=request.user, minimum_score=1, poste=query['poste'],
+                                        program_name=elem['program_name'], program_version=elem['program_version'])
+                if 'minimum_score' in elem:
+                    new_prog.minimum_score = int(elem['minimum_score'])
+
+                new_prog.save()
+                (cpes, up_to_date) =  cpe_updater.get_cpes_from_name_version(elem['program_name'], elem['program_version'], up_to_date)
+                new_prog.cpe.set(cpes)
+                alerts.check_prog(new_prog, request.user)
+
+            if only_one_program:
+                obj = UserPrograms.objects.get(user_id=request.user.id, program_name=elem['program_name'], poste=query['poste'])
+                serializer = self.get_serializer(obj)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_200_OK)
+
 
 class AlertViewSet(viewsets.ModelViewSet):
     """View for alerts
