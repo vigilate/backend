@@ -46,40 +46,33 @@ class UserProgramsTestCase(APITestCase):
     def test_submit_one_program(self):
         self.client.login(username="test", password="test")
 
-        prog_list = {"programs_list" :
-                     [
-                         {"program_name" : "Google Chrome", "program_version" : "51.0"}
-                     ],
-                     "poste" : 1}
+        prog = {"program_name" : "Google Chrome", "program_version" : "51.0", "minimum_score": 0, "poste": 1}
 
-        resp = self.client.post("/api/uprog/submit_programs/", json.dumps(prog_list),
+        resp = self.client.post("/api/uprog/", json.dumps(prog),
                                 content_type="application/x-www-form-urlencoded")
 
         self.assertTrue(resp.status_code == 200)
         user_progs = models.UserPrograms.objects.filter(user_id=self.new_client.id)
 
         prog_saved = {"program_name" : user_progs[0].program_name, "program_version" : user_progs[0].program_version}
+        prog_sent = {"program_name" :  prog["program_name"], "program_version" : prog["program_version"]}
 
-        self.assertTrue(prog_list['programs_list'][0] == prog_saved)
+        self.assertTrue(prog_sent == prog_saved)
         
     def test_submit_one_program_json_encoded(self):
         self.client.login(username="test", password="test")
+        prog = {"program_name" : "Google Chrome", "program_version" : "51.0", "minimum_score": 0,"poste": 1}
 
-        prog_list = {"programs_list" :
-                     [
-                         {"program_name" : "Google Chrome", "program_version" : "51.0"}
-                     ],
-                     "poste" : 1}
-
-        resp = self.client.post("/api/uprog/submit_programs/", json.dumps(prog_list),
+        resp = self.client.post("/api/uprog/", json.dumps(prog),
                                 content_type="application/json")
 
         self.assertTrue(resp.status_code == 200)
         user_progs = models.UserPrograms.objects.filter(user_id=self.new_client.id)
 
         prog_saved = {"program_name" : user_progs[0].program_name, "program_version" : user_progs[0].program_version}
+        prog_sent = {"program_name" :  prog["program_name"], "program_version" : prog["program_version"]}
 
-        self.assertTrue(prog_list['programs_list'][0] == prog_saved)
+        self.assertTrue(prog_sent == prog_saved)
 
 
     def test_submit_multiples_programs(self):
@@ -92,9 +85,8 @@ class UserProgramsTestCase(APITestCase):
                      ],
                      "poste" : 1}
 
-        resp = self.client.post("/api/uprog/submit_programs/", json.dumps(prog_list),
+        resp = self.client.post("/api/uprog/", json.dumps(prog_list),
                                 content_type="application/x-www-form-urlencoded")
-
         self.assertTrue(resp.status_code == 200)
         user_progs = models.UserPrograms.objects.filter(user_id=self.new_client.id)
         database_programs_json = []
@@ -102,5 +94,6 @@ class UserProgramsTestCase(APITestCase):
             elem = {"program_name" : prog.program_name, "program_version" : prog.program_version}
             database_programs_json.append(elem)
 
+        
         for sent in prog_list['programs_list']:
             self.assertTrue(sent in database_programs_json)
