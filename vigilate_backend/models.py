@@ -60,7 +60,7 @@ class UserPrograms(models.Model):
     minimum_score = models.IntegerField(null=False)
     user_id = models.ForeignKey('User')
     poste = models.IntegerField()
-    cpe = models.ManyToManyField('vulnerability_manager.Cpe')
+    cpe = models.ForeignKey('vulnerability_manager.Cpe')
 
 class Alert(models.Model):
     """Alert model

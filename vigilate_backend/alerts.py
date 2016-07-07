@@ -9,8 +9,7 @@ def create_alert(prog, cve, user):
     #TODO take action to send alert
 
 def check_prog(prog, user):
-    cpes = prog.cpe.all()
-    cves = models_vuln.Cve.objects.filter(cpe__in=cpes)
+    cves = models_vuln.Cve.objects.filter(cpe=prog.cpe)
 
     for cve in cves:
         create_alert(prog, cve, user)
