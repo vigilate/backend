@@ -69,4 +69,7 @@ class Alert(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
     user = models.ForeignKey('User')
     program = models.ForeignKey('UserPrograms')
-    cve = models.ForeignKey('vulnerability_manager.Cve')
+    cve = models.ManyToManyField('vulnerability_manager.Cve')
+
+    def max_cvss(self):
+         return max(self.cve.values_list("cvss_score", flat=True))

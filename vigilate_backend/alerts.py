@@ -4,8 +4,9 @@ from django.db.models import Q
 
 def create_alert(prog, cve, user):
     #TODO check level of vuln vs level min d'alert in prog
-    new_alert = models.Alert(user=user, program=prog, cve=cve)
-    new_alert.save()
+    alert,_ = models.Alert.objects.get_or_create(user=user, program=prog)
+    if not alert.cve.filter(cveid=cve.cveid).exists():
+        alert.cve.add(cve.cveid)
     #TODO take action to send alert
 
 def check_prog(prog, user):
