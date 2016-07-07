@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from vigilate_backend import models
+from vulnerability_manager.serializers import CveSerializer
 
 class UserSerializer(serializers.ModelSerializer):
     """Serialisation of User
@@ -64,6 +65,9 @@ class AlertSerializer(serializers.ModelSerializer):
     """Serialisation of user alerts
     """
     
+    program = UserProgramsSerializer()
+    cve = CveSerializer()
+
     class Meta:
         model = models.Alert
         fields = ('id', 'user', 'program', 'cve')
