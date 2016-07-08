@@ -65,11 +65,11 @@ class AlertSerializer(serializers.ModelSerializer):
     """Serialisation of user alerts
     """
     
-    program = UserProgramsSerializer()
+    # program = UserProgramsSerializer()
 
     class Meta:
         model = models.Alert
-        fields = ('id', 'user', 'program', 'cve', 'max_cvss')
+        fields = ('id', 'user', 'program', 'number_cve', 'max_cvss', 'program_info')
 
     def create(self, validated_data):
         """Create an alert
@@ -85,3 +85,16 @@ class AlertSerializer(serializers.ModelSerializer):
         instance.cve = validated_data.get('cve', instance.cve)
         instance.save()
         return instance
+
+
+
+class AlertSerializerDetail(serializers.ModelSerializer):
+    """Serialisation of user alerts
+    """
+
+    program = UserProgramsSerializer()
+    cve = CveSerializer(read_only=True, many=True)
+
+    class Meta:
+        model = models.Alert
+        fields = ('id', 'user', 'program', 'cve')

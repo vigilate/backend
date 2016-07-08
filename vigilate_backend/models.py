@@ -73,3 +73,9 @@ class Alert(models.Model):
 
     def max_cvss(self):
          return max(self.cve.values_list("cvss_score", flat=True))
+
+    def program_info(self):
+        return {k:getattr(self.program, k) for k in ['program_name', 'program_version']}
+
+    def number_cve(self):
+        return self.cve.count()
