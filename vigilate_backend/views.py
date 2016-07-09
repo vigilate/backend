@@ -10,7 +10,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from pkg_resources import parse_version
 from vigilate_backend.utils import get_query, parse_cpe
 from vigilate_backend.models import User, UserPrograms, Alert
-from vigilate_backend.serializers import UserSerializer, UserProgramsSerializer, AlertSerializer
+from vigilate_backend.serializers import UserSerializer, UserProgramsSerializer, AlertSerializer, AlertSerializerDetail
 from vigilate_backend import alerts
 from vulnerability_manager import cpe_updater
 
@@ -129,6 +129,10 @@ class AlertViewSet(viewsets.ModelViewSet):
     """View for alerts
     """
     serializer_class = AlertSerializer
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return AlertSerializerDetail
+        return self.serializer_class
 
     def get_queryset(self):
         """Get the queryset depending on the user permission
