@@ -14,9 +14,9 @@ class User(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
     email = models.CharField(max_length=50, unique=True)
     password = models.TextField(null=False)
-    user_type = models.IntegerField(null=False)
-    contrat = models.IntegerField(null=False)
-    id_dealer = models.IntegerField()
+    user_type = models.IntegerField(null=False, default=0)
+    contrat = models.IntegerField(null=False, default=0)
+    id_dealer = models.IntegerField(default=0)
 
     EMAIL = "EMAIL"
     SMS = "SMS"
