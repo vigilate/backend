@@ -1,5 +1,6 @@
 import json
 from django.http import HttpResponse
+from vigilate_backend.settings import TESTING
 from django.db import IntegrityError
 from django.db.models import Q
 from django.contrib.auth.models import User as UserDjango
@@ -29,7 +30,7 @@ class UserViewSet(viewsets.ModelViewSet):
         """Allow non-authenticated user to create an account
         """
 
-        if self.request.method == 'POST' and self.request.path == "/api/users/":
+        if self.request.method == 'POST' and self.request.path == "/api/v1/users/":
             return (AllowAny(),)
         return [perm() for perm in self.permission_classes]
 
@@ -83,8 +84,10 @@ class UserProgramsViewSet(viewsets.ModelViewSet):
         for elem in query['programs_list']:
             if not all(x in elem for x in ['program_version', 'program_name']):
                 return Response(status=status.HTTP_400_BAD_REQUEST)
-
+        
         up_to_date = False
+        if TESTING:
+            up_to_date = True
         for elem in query['programs_list']:
             prog = UserPrograms.objects.filter(user_id=request.user.id, program_name=elem['program_name'], poste=query['poste'])
 

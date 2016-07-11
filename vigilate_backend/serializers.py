@@ -8,7 +8,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.User
-        fields = ('id', 'username', 'email', 'password', 'user_type', 'contrat', 'id_dealer', 'default_alert_type')
+        fields = ('id', 'email', 'password', 'user_type', 'contrat', 'id_dealer', 'default_alert_type')
 
     def create(self, validated_data):
         """Create an user
@@ -26,7 +26,6 @@ class UserSerializer(serializers.ModelSerializer):
         """
         
         instance.id = validated_data.get('id', instance.id)
-        instance.username = validated_data.get('username', instance.username)
         instance.email = validated_data.get('email', instance.email)
         instance.user_type = validated_data.get('user_type', instance.user_type)
         instance.contrat = validated_data.get('contrat', instance.contrat)

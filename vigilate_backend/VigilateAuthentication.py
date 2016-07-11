@@ -19,17 +19,17 @@ class VigilateAuthentication(authentication.BasicAuthentication):
             method, creds = authheader.split()
             if method != "Basic":
                 return None
-            username, pwd = base64.b64decode(creds).decode("utf8").split(":", 1)
+            email, pwd = base64.b64decode(creds).decode("utf8").split(":", 1)
         except Exception:
             return None
 
-        if not username:
+        if not email:
             return None
 
         user = None
 
         try:
-            user = User.objects.get(username=username)
+            user = User.objects.get(email=email)
             if not user.check_password(pwd):
                 raise exceptions.AuthenticationFailed('Wrong password')
 
@@ -40,7 +40,7 @@ class VigilateAuthentication(authentication.BasicAuthentication):
             return (user, None)
 
         try:
-            user = UserDjango.objects.get(username=username)
+            user = UserDjango.objects.get(username=email)
             if not user.check_password(pwd):
                 raise exceptions.AuthenticationFailed('Wrong password')
 

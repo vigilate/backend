@@ -1,9 +1,8 @@
 
 userdata = {
-    "username" : "test",
+    "email" : "test@test.com",
     "password" : "test",
     "hash" : "UCGeyUPEIw$711cbb3de43417805310ead8e3e4dca6ab5a5f669819a7a3373d9bebdc5986fedfaf8a19cc80f823794d4e14c98d75bad46e55e08aca651f3a2123c0546ad07270f22cb2e27f",
-    "email" : "test@test.test",
     "type" : 1,
     "contrat": 1,
     "dealer": 1
