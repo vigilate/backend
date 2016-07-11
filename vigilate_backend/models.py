@@ -18,6 +18,16 @@ class User(models.Model):
     contrat = models.IntegerField(null=False)
     id_dealer = models.IntegerField()
 
+    EMAIL = "EMAIL"
+    SMS = "SMS"
+    ALERT_TYPE = (
+                (EMAIL, 'Email'),
+                (SMS, 'Sms')
+            )
+    default_alert_type = models.CharField(max_length=5,
+                                          choices=ALERT_TYPE,
+                                          default=EMAIL)
+
     is_superuser = False
 
     def is_authenticated(self):
