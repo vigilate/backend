@@ -1,7 +1,6 @@
 import sys
 import json
 import base64
-import random
 from django.contrib.auth.models import User
 from rest_framework.test import APITestCase, APIClient
 from vigilate_backend import models
@@ -29,22 +28,22 @@ class UserProgramsTestCase(APITestCase):
     def test_api_access(self):
         self.client.login(username=userdata['username'], password=userdata['password'])
         resp = self.client.get(api_routes['api'])
-        self.assertTrue(resp.status_code == 200)
+        self.assertEqual(resp.status_code, 200)
 
     def test_route_alerts(self):
         self.client.login(username=userdata['username'], password=userdata['password'])
         resp_alerts = self.client.get(api_routes['alerts'])
-        self.assertTrue(resp_alerts.status_code == 200)
+        self.assertEqual(resp_alerts.status_code, 200)
 
     def test_route_user_progs(self):
         self.client.login(username=userdata['username'], password=userdata['password'])
         resp_progs = self.client.get(api_routes['programs'])
-        self.assertTrue(resp_progs.status_code == 200)
+        self.assertEqual(resp_progs.status_code, 200)
 
     def test_route_users(self):
         self.client.login(username=userdata['username'], password=userdata['password'])
         resp_users = self.client.get(api_routes['users'])
-        self.assertTrue(resp_users.status_code == 200)
+        self.assertEqual(resp_users.status_code, 200)
 
     def test_submit_one_program(self):
         self.client.login(username=userdata['username'], password=userdata['password'])
@@ -53,13 +52,13 @@ class UserProgramsTestCase(APITestCase):
             resp = self.client.post(api_routes['programs'], json.dumps(prog),
                                     content_type="application/x-www-form-urlencoded")
 
-            self.assertTrue(resp.status_code == 200)
+            self.assertEqual(resp.status_code, 200)
             user_progs = models.UserPrograms.objects.filter(user_id=self.new_client.id)
 
             prog_saved = {"program_name" : user_progs[0].program_name, "program_version" : user_progs[0].program_version}
             prog_sent = {"program_name" :  prog["program_name"], "program_version" : prog["program_version"]}
         
-            self.assertTrue(prog_sent == prog_saved)
+            self.assertEqual(prog_sent, prog_saved)
 
     def test_submit_one_program_json_encoded(self):
         self.client.login(username=userdata['username'], password=userdata['password'])
@@ -68,23 +67,22 @@ class UserProgramsTestCase(APITestCase):
             resp = self.client.post(api_routes['programs'], json.dumps(prog),
                                     content_type="application/json")
             
-            self.assertTrue(resp.status_code == 200)
+            self.assertEqual(resp.status_code, 200)
             user_progs = models.UserPrograms.objects.filter(user_id=self.new_client.id)
 
             prog_saved = {"program_name" : user_progs[0].program_name, "program_version" : user_progs[0].program_version}
             prog_sent = {"program_name" :  prog["program_name"], "program_version" : prog["program_version"]}
 
-            self.assertTrue(prog_sent == prog_saved)
+            self.assertEqual(prog_sent, prog_saved)
 
     def test_submit_multiples_programs(self):
         self.client.login(username=userdata['username'], password=userdata['password'])
 
         for prog_list in prog_list_to_submit:
-            prog_list = random.choice(prog_list_to_submit)
 
             resp = self.client.post(api_routes['programs'], json.dumps(prog_list),
                                     content_type="application/x-www-form-urlencoded")
-            self.assertTrue(resp.status_code == 200)
+            self.assertEqual(resp.status_code, 200)
             user_progs = models.UserPrograms.objects.filter(user_id=self.new_client.id)
             database_programs_json = []
             for prog in user_progs:
