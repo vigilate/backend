@@ -48,48 +48,48 @@ class UserProgramsTestCase(APITestCase):
 
     def test_submit_one_program(self):
         self.client.login(username=userdata['username'], password=userdata['password'])
+        for prog in prog_to_submit:
 
-        prog = random.choice(prog_to_submit)
+            resp = self.client.post(api_routes['programs'], json.dumps(prog),
+                                    content_type="application/x-www-form-urlencoded")
 
-        resp = self.client.post(api_routes['programs'], json.dumps(prog),
-                                content_type="application/x-www-form-urlencoded")
+            self.assertTrue(resp.status_code == 200)
+            user_progs = models.UserPrograms.objects.filter(user_id=self.new_client.id)
 
-        self.assertTrue(resp.status_code == 200)
-        user_progs = models.UserPrograms.objects.filter(user_id=self.new_client.id)
-
-        prog_saved = {"program_name" : user_progs[0].program_name, "program_version" : user_progs[0].program_version}
-        prog_sent = {"program_name" :  prog["program_name"], "program_version" : prog["program_version"]}
-
-        self.assertTrue(prog_sent == prog_saved)
+            prog_saved = {"program_name" : user_progs[0].program_name, "program_version" : user_progs[0].program_version}
+            prog_sent = {"program_name" :  prog["program_name"], "program_version" : prog["program_version"]}
         
+            self.assertTrue(prog_sent == prog_saved)
+
     def test_submit_one_program_json_encoded(self):
         self.client.login(username=userdata['username'], password=userdata['password'])
-        prog = random.choice(prog_to_submit)
+        for prog in prog_to_submit:
 
-        resp = self.client.post(api_routes['programs'], json.dumps(prog),
-                                content_type="application/json")
+            resp = self.client.post(api_routes['programs'], json.dumps(prog),
+                                    content_type="application/json")
+            
+            self.assertTrue(resp.status_code == 200)
+            user_progs = models.UserPrograms.objects.filter(user_id=self.new_client.id)
 
-        self.assertTrue(resp.status_code == 200)
-        user_progs = models.UserPrograms.objects.filter(user_id=self.new_client.id)
+            prog_saved = {"program_name" : user_progs[0].program_name, "program_version" : user_progs[0].program_version}
+            prog_sent = {"program_name" :  prog["program_name"], "program_version" : prog["program_version"]}
 
-        prog_saved = {"program_name" : user_progs[0].program_name, "program_version" : user_progs[0].program_version}
-        prog_sent = {"program_name" :  prog["program_name"], "program_version" : prog["program_version"]}
-
-        self.assertTrue(prog_sent == prog_saved)
+            self.assertTrue(prog_sent == prog_saved)
 
     def test_submit_multiples_programs(self):
         self.client.login(username=userdata['username'], password=userdata['password'])
 
-        prog_list = random.choice(prog_list_to_submit)
+        for prog_list in prog_list_to_submit:
+            prog_list = random.choice(prog_list_to_submit)
 
-        resp = self.client.post(api_routes['programs'], json.dumps(prog_list),
-                                content_type="application/x-www-form-urlencoded")
-        self.assertTrue(resp.status_code == 200)
-        user_progs = models.UserPrograms.objects.filter(user_id=self.new_client.id)
-        database_programs_json = []
-        for prog in user_progs:
-            elem = {"program_name" : prog.program_name, "program_version" : prog.program_version}
-            database_programs_json.append(elem)
+            resp = self.client.post(api_routes['programs'], json.dumps(prog_list),
+                                    content_type="application/x-www-form-urlencoded")
+            self.assertTrue(resp.status_code == 200)
+            user_progs = models.UserPrograms.objects.filter(user_id=self.new_client.id)
+            database_programs_json = []
+            for prog in user_progs:
+                elem = {"program_name" : prog.program_name, "program_version" : prog.program_version}
+                database_programs_json.append(elem)
         
-        for sent in prog_list['programs_list']:
-            self.assertTrue(sent in database_programs_json)
+            for sent in prog_list['programs_list']:
+                self.assertTrue(sent in database_programs_json)
