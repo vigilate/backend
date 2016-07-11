@@ -29,7 +29,7 @@ class UserViewSet(viewsets.ModelViewSet):
         """Allow non-authenticated user to create an account
         """
 
-        if self.request.method == 'POST' and self.request.path == "/api/users/":
+        if self.request.method == 'POST' and self.request.path == "/api/v1/users/":
             return (AllowAny(),)
         return [perm() for perm in self.permission_classes]
 

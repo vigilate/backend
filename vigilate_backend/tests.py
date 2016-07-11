@@ -11,13 +11,13 @@ class UserProgramsTestCase(APITestCase):
     def setUp(self):
         self.client = APIClient()
 
-        credentials = base64.b64encode(str.encode(userdata['username'])+b":"+str.encode(userdata['password']))
+        credentials = base64.b64encode(str.encode(userdata['email'])+b":"+str.encode(userdata['password']))
 
         self.client.defaults['HTTP_AUTHORIZATION'] = 'Basic ' + str(credentials.decode("utf-8"))
-        User.objects.create_user(username=userdata['username'], password=userdata['password'])
+        User.objects.create_user(email=userdata['email'], password=userdata['password'])
 
         self.new_client = models.User()
-        self.new_client.username = userdata['username']
+        self.new_client.email = userdata['email']
         self.new_client.password = userdata['hash']
         self.new_client.email = userdata['email']
         self.new_client.user_type = userdata['type']
@@ -26,27 +26,27 @@ class UserProgramsTestCase(APITestCase):
         self.new_client.save()
 
     def test_api_access(self):
-        self.client.login(username=userdata['username'], password=userdata['password'])
+        self.client.login(email=userdata['email'], password=userdata['password'])
         resp = self.client.get(api_routes['api'])
         self.assertEqual(resp.status_code, 200)
 
     def test_route_alerts(self):
-        self.client.login(username=userdata['username'], password=userdata['password'])
+        self.client.login(email=userdata['email'], password=userdata['password'])
         resp_alerts = self.client.get(api_routes['alerts'])
         self.assertEqual(resp_alerts.status_code, 200)
 
     def test_route_user_progs(self):
-        self.client.login(username=userdata['username'], password=userdata['password'])
+        self.client.login(email=userdata['email'], password=userdata['password'])
         resp_progs = self.client.get(api_routes['programs'])
         self.assertEqual(resp_progs.status_code, 200)
 
     def test_route_users(self):
-        self.client.login(username=userdata['username'], password=userdata['password'])
+        self.client.login(email=userdata['email'], password=userdata['password'])
         resp_users = self.client.get(api_routes['users'])
         self.assertEqual(resp_users.status_code, 200)
 
     def test_submit_one_program(self):
-        self.client.login(username=userdata['username'], password=userdata['password'])
+        self.client.login(email=userdata['email'], password=userdata['password'])
         for prog in prog_to_submit:
 
             resp = self.client.post(api_routes['programs'], json.dumps(prog),
@@ -61,7 +61,7 @@ class UserProgramsTestCase(APITestCase):
             self.assertEqual(prog_sent, prog_saved)
 
     def test_submit_one_program_json_encoded(self):
-        self.client.login(username=userdata['username'], password=userdata['password'])
+        self.client.login(email=userdata['email'], password=userdata['password'])
         for prog in prog_to_submit:
 
             resp = self.client.post(api_routes['programs'], json.dumps(prog),
@@ -76,7 +76,7 @@ class UserProgramsTestCase(APITestCase):
             self.assertEqual(prog_sent, prog_saved)
 
     def test_submit_multiples_programs(self):
-        self.client.login(username=userdata['username'], password=userdata['password'])
+        self.client.login(email=userdata['email'], password=userdata['password'])
 
         for prog_list in prog_list_to_submit:
 
