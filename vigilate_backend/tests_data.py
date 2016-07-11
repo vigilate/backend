@@ -10,10 +10,10 @@ userdata = {
     }
 
 api_routes = {
-    "api" : "/api/",
-    "alerts" : "/api/alerts/",
-    "programs" : "/api/uprog/",
-    "users" : "/api/users/"
+    "api" : "/api/v1/",
+    "alerts" : "/api/v1/alerts/",
+    "programs" : "/api/v1/uprog/",
+    "users" : "/api/v1/users/"
 }
 
 prog_to_submit = [{"program_name" : "Google Chrome", "program_version" : "51.0", "minimum_score": 0,"poste": 1}]
