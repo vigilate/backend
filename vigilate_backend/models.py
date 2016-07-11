@@ -20,10 +20,15 @@ class User(models.Model):
 
     EMAIL = "EMAIL"
     SMS = "SMS"
+    WEB = "WEB"
+    NONE = "NONE"
+
     ALERT_TYPE = (
-                (EMAIL, 'Email'),
-                (SMS, 'Sms')
-            )
+        (EMAIL, 'Email'),
+        (SMS, 'Sms'),
+        (WEB, 'Web')
+        (NONE, None)
+    )
     default_alert_type = models.CharField(max_length=5,
                                           choices=ALERT_TYPE,
                                           default=EMAIL)
