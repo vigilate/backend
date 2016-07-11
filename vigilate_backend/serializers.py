@@ -42,7 +42,7 @@ class UserProgramsSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = models.UserPrograms
-        fields = ('id', 'program_name', 'program_version', 'minimum_score', 'user_id', 'poste', 'cpe', 'sms_score', 'email_score', 'web_score')
+        fields = ('id', 'program_name', 'program_version', 'minimum_score', 'user_id', 'poste', 'cpe', 'sms_score', 'email_score', 'web_score', 'alert_type_default')
 
     def create(self, validated_data):
         """Create an user program
@@ -60,6 +60,8 @@ class UserProgramsSerializer(serializers.ModelSerializer):
         instance.poste = validated_data.get('poste', instance.poste)
         instance.sms_score = validated_data.get('sms_score', instance.sms_score)
         instance.email_score = validated_data.get('email_score', instance.email_score)
+        instance.web_score = validated_data.get('web_score', instance.web_score)
+        instance.alert_type_default = validated_data.get('alert_type_default', instance.alert_type_default)
         instance.save()
         return instance
 

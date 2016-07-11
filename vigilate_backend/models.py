@@ -65,6 +65,7 @@ class UserPrograms(models.Model):
     sms_score = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)], default=0)
     email_score = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)], default=0)
     web_score = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)], default=0)
+    alert_type_default = models.BooleanField(default=True)
 
 class Alert(models.Model):
     """Alert model
