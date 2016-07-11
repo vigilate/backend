@@ -3,6 +3,7 @@ import random
 import string
 import PyArgon2
 from django.db import models
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 # Create your models here.
 
@@ -61,6 +62,9 @@ class UserPrograms(models.Model):
     user_id = models.ForeignKey('User')
     poste = models.IntegerField()
     cpe = models.ForeignKey('vulnerability_manager.Cpe')
+    sms_score = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)], default=0)
+    email_score = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)], default=0)
+    web_score = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)], default=0)
 
 class Alert(models.Model):
     """Alert model
