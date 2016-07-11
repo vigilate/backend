@@ -12,7 +12,7 @@ router.register(r'uprog', views.UserProgramsViewSet, "UserPrograms")
 router.register(r'alerts', views.AlertViewSet, "Alert")
 
 urlpatterns = [
-    url('^api/', include(router.urls)),
+    url('^api/v1/', include(router.urls)),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^$', views.home),
     url('^update_cpe$', views_vuln_m.update_cpe),
