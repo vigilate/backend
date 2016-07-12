@@ -93,13 +93,13 @@ class UserProgramsViewSet(viewsets.ModelViewSet):
 
             # if prog , user is already monitoring the given program, update is needed
             if prog:
+                
                 prog = prog[0]
                 prog_changed = False
                 if prog.program_version != elem['program_version']:
                     prog_changed = True
                     prog.program_version = elem['program_version']
-                    prog.cpe.clear()
-                    (cpe, up_to_date) = cpe_updater.get_cpes_from_name_version(elem['program_name'], elem['program_version'], up_to_date)
+                    (cpe, up_to_date) = cpe_updater.get_cpe_from_name_version(elem['program_name'], elem['program_version'], up_to_date)
                     prog.cpe = cpe
                 if 'minimum_score' in elem and prog.minimum_score != int(elem['minimum_score']):
                     prog_changed = True

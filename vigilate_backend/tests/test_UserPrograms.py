@@ -4,40 +4,27 @@ import base64
 from rest_framework.test import APITestCase, APIClient
 from vigilate_backend import models
 
-from vigilate_backend.tests_data import *
+from vigilate_backend.tests import basic_data
+from vigilate_backend.tests import test_UserPrograms_data
 
 class UserProgramsTestCase(APITestCase):
     def setUp(self):
         self.client = APIClient()
 
-
-
-        resp = self.client.post(api_routes['users'], json.dumps({'email': userdata['email'], 'password': userdata['password']}), content_type='application/json')
+        resp = self.client.post(basic_data.api_routes['users'],
+                                json.dumps({'email': basic_data.user['email'],
+                                            'password': basic_data.user['password']}),
+                                content_type='application/json')
         self.new_client = json.loads(resp.content.decode("utf-8"))
         
-        credentials = base64.b64encode(str.encode(userdata['email'])+b":"+str.encode(userdata['password']))
+        credentials = base64.b64encode(str.encode(basic_data.user['email'])+
+                                       b":"+str.encode(basic_data.user['password']))
         self.client.defaults['HTTP_AUTHORIZATION'] = 'Basic ' + str(credentials.decode("utf-8"))
 
-    def test_api_access(self):
-        resp = self.client.get(api_routes['api'])
-        self.assertEqual(resp.status_code, 200)
-
-    def test_route_alerts(self):
-        resp_alerts = self.client.get(api_routes['alerts'])
-        self.assertEqual(resp_alerts.status_code, 200)
-
-    def test_route_user_progs(self):
-        resp_progs = self.client.get(api_routes['programs'])
-        self.assertEqual(resp_progs.status_code, 200)
-
-    def test_route_users(self):
-        resp_users = self.client.get(api_routes['users'])
-        self.assertEqual(resp_users.status_code, 200)
-
     def test_submit_one_program(self):
-        for prog in prog_to_submit:
+        for prog in test_UserPrograms_data.prog_to_submit:
 
-            resp = self.client.post(api_routes['programs'], json.dumps(prog),
+            resp = self.client.post(basic_data.api_routes['programs'], json.dumps(prog),
                                     content_type="application/x-www-form-urlencoded")
 
             self.assertEqual(resp.status_code, 200)
@@ -49,9 +36,9 @@ class UserProgramsTestCase(APITestCase):
             self.assertEqual(prog_sent, prog_saved)
 
     def test_submit_one_program_json_encoded(self):
-        for prog in prog_to_submit:
+        for prog in test_UserPrograms_data.prog_to_submit:
 
-            resp = self.client.post(api_routes['programs'], json.dumps(prog),
+            resp = self.client.post(basic_data.api_routes['programs'], json.dumps(prog),
                                     content_type="application/json")
             
             self.assertEqual(resp.status_code, 200)
@@ -63,10 +50,9 @@ class UserProgramsTestCase(APITestCase):
             self.assertEqual(prog_sent, prog_saved)
 
     def test_submit_multiples_programs(self):
+        for prog_list in test_UserPrograms_data.prog_list_to_submit:
 
-        for prog_list in prog_list_to_submit:
-
-            resp = self.client.post(api_routes['programs'], json.dumps(prog_list),
+            resp = self.client.post(basic_data.api_routes['programs'], json.dumps(prog_list),
                                     content_type="application/x-www-form-urlencoded")
             self.assertEqual(resp.status_code, 200)
             user_progs = models.UserPrograms.objects.filter(user_id=self.new_client["id"])
