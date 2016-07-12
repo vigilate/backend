@@ -2,6 +2,7 @@ import sys
 import json
 import base64
 from django.contrib.auth.models import User
+from django.core import mail
 from rest_framework.test import APITestCase, APIClient
 from vigilate_backend import models
 
@@ -146,3 +147,16 @@ class UserTestCase(APITestCase):
         self.assertEqual(resp.status_code, 200)
         data = json.loads(resp.content.decode("utf8"))
         self.assertEqual(len(data), len(test_User_data.multiple_user))
+
+    def test_receive_mail_when_user_created(self):
+
+        for user_to_create in test_User_data.multiple_user:
+            mail.outbox = []
+            resp = self.client.post(basic_data.api_routes['users'],
+                                    json.dumps({'email': user_to_create['email'],
+                                                'password': user_to_create['password']}),
+                                    content_type='application/json')
+
+            self.assertEqual(resp.status_code, 201)
+            self.assertEqual(len(mail.outbox), 1)
+            self.assertEqual(mail.outbox[0].subject, 'Vigilate account created')
