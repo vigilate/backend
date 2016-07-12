@@ -44,6 +44,7 @@ class AlertTestCase(APITestCase):
 
 
     def test_alert_when_prog_vuln(self):
+        mail.outbox = []
         self.addVuln()
         resp = self.client.post(basic_data.api_routes['programs'],
                                 json.dumps(test_Alert_data.prog_vuln),

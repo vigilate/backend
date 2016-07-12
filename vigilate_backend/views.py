@@ -4,6 +4,7 @@ from vigilate_backend.settings import TESTING
 from django.db import IntegrityError
 from django.db.models import Q
 from django.contrib.auth.models import User as UserDjango
+from django.core.mail import send_mail
 from rest_framework import viewsets, status
 from rest_framework.decorators import list_route, permission_classes
 from rest_framework.response import Response
@@ -42,7 +43,16 @@ class UserViewSet(viewsets.ModelViewSet):
         else:
             return User.objects.filter(id=self.request.user.id)
 
+    def perform_create(self, serializer):
+        new_user = serializer.save()
 
+        send_mail(
+            'Vigilate account created',
+            'Hello, your vigilate account has just been created.\nYou can now connect to the website with your mail address and your password.',
+            'vigilate_2017@epitech.eu',
+            [new_user.email],
+            fail_silently=False,
+        )
 
 class UserProgramsViewSet(viewsets.ModelViewSet):
     """View for users programs
