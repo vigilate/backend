@@ -76,6 +76,29 @@ class AlertTestCase(APITestCase):
         self.assertEqual(len(data), 1)
 
 
+    def test_alert_when_prog_vuln_update(self):
+        self.addVuln()
+        resp = self.client.post(basic_data.api_routes['programs'],
+                                json.dumps(test_Alert_data.prog_vuln_before_update),
+                                content_type="application/json")
+
+        data_prog = json.loads(resp.content.decode("utf8"))
+        self.assertEqual(resp.status_code, 200)
+        resp = self.client.get(basic_data.api_routes['alerts'])
+        data = json.loads(resp.content.decode("utf8"))
+        self.assertEqual(len(data), 0)
+
+        resp = self.client.patch(basic_data.api_routes['programs'] + str(data_prog["id"]) + "/",
+                                json.dumps(test_Alert_data.prog_vuln),
+                                content_type="application/json")
+
+        print(resp.content)
+
+        self.assertEqual(resp.status_code, 200)
+        resp = self.client.get(basic_data.api_routes['alerts'])
+        data = json.loads(resp.content.decode("utf8"))
+        self.assertEqual(len(data), 1)
+
 
     def test_alert_when_prog_vuln_update_proglist(self):
         self.addVuln()

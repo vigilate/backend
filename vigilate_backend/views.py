@@ -128,6 +128,14 @@ class UserProgramsViewSet(viewsets.ModelViewSet):
         return Response(status=status.HTTP_200_OK)
 
 
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        (cpe, _) = cpe_updater.get_cpe_from_name_version(instance.program_name, instance.program_version, True)
+        instance.cpe = cpe
+        instance.save(update_fields=["cpe"])
+        alerts.check_prog(instance, self.request.user)
+
+
 class AlertViewSet(viewsets.ModelViewSet):
     """View for alerts
     """
