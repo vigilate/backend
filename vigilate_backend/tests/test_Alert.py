@@ -1,6 +1,7 @@
 import sys
 import json
 import base64
+from django.core import mail
 from django.contrib.auth.models import User
 from rest_framework.test import APITestCase, APIClient
 from vigilate_backend.models import Alert
@@ -55,6 +56,8 @@ class AlertTestCase(APITestCase):
 
         resp = self.client.get(basic_data.api_routes['alerts'] + str(data[0]["id"]) + "/")
         self.assertEqual(resp.status_code, 200)
+
+        self.assertEqual(len(mail.outbox), 1)
 
 
 
