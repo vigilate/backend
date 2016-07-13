@@ -41,7 +41,7 @@ class UserProgramsSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = models.UserPrograms
-        fields = ('id', 'program_name', 'program_version', 'minimum_score', 'user_id', 'poste', 'cpe', 'sms_score', 'email_score', 'web_score', 'alert_type_default')
+        fields = ('id', 'program_name', 'program_version', 'minimum_score', 'user_id', 'poste', 'cpe', 'sms_score', 'email_score', 'web_score', 'alert_type_default', 'is_vulnerable')
 
     def create(self, validated_data):
         """Create an user program

@@ -82,6 +82,9 @@ class UserPrograms(models.Model):
     web_score = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)], default=0)
     alert_type_default = models.BooleanField(default=True)
 
+    def is_vulnerable(self):
+        return self.alert_set.exists()
+
 class Alert(models.Model):
     """Alert model
     """
