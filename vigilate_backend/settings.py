@@ -54,6 +54,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'middleware.vigilateMiddleware.VigilateMiddleware',
 )
 
 ROOT_URLCONF = 'vigilate_backend.urls'
