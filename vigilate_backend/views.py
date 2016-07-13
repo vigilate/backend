@@ -11,8 +11,8 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from pkg_resources import parse_version
 from vigilate_backend.utils import get_query, parse_cpe
-from vigilate_backend.models import User, UserPrograms, Alert
-from vigilate_backend.serializers import UserSerializer, UserProgramsSerializer, AlertSerializer, AlertSerializerDetail
+from vigilate_backend.models import User, UserPrograms, Alert, Station
+from vigilate_backend.serializers import UserSerializer, UserProgramsSerializer, AlertSerializer, AlertSerializerDetail, StationSerializer
 from vigilate_backend import alerts
 from vulnerability_manager import cpe_updater
 
@@ -162,3 +162,17 @@ class AlertViewSet(viewsets.ModelViewSet):
             return Alert.objects.all()
         else:
             return Alert.objects.filter(user_id=self.request.user.id)
+
+
+class StationViewSet(viewsets.ModelViewSet):
+    """View for station
+    """
+    serializer_class = StationSerializer
+    
+    def get_queryset(self):
+        """Get the queryset depending on the user permission
+        """
+        if self.request.user.is_superuser:
+            return Station.objects.all()
+        else:
+            return Station.objects.filter(user_id=self.request.user.id)
