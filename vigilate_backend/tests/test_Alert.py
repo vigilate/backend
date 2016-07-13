@@ -25,11 +25,13 @@ class AlertTestCase(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION='Basic ' + credentials)
 
     def addVuln(self, check_prog = False):
-        Cpe.objects.get_or_create(**test_Alert_data.cpe)
-        cve = Cve.objects.create(**test_Alert_data.cve)
-        cve.cpe.set(test_Alert_data.cve_cpe)
-        if check_prog:
-            alerts.check_cve(cve)
+        for cpe in test_Alert_data.cpes:
+            Cpe.objects.get_or_create(**cpe)
+        for cve in test_Alert_data.cves:
+            new_cve = Cve.objects.create(**cve)
+            new_cve.cpe.set(test_Alert_data.cve_cpe[cve["cveid"]])
+            if check_prog:
+                alerts.check_cve(new_cve)
 
     def test_no_alert_when_prog_not_vuln(self):
         self.addVuln()
@@ -126,3 +128,23 @@ class AlertTestCase(APITestCase):
         resp = self.client.get(basic_data.api_routes['alerts'])
         data = json.loads(resp.content.decode("utf8"))
         self.assertEqual(len(data), 1)
+
+
+    def test_only_one_alert_when_multiple_vuln(self):
+        mail.outbox = []
+        self.addVuln()
+
+        resp = self.client.post(basic_data.api_routes['programs'],
+                                json.dumps(test_Alert_data.proglist_vuln_multi),
+                                content_type="application/json")
+
+        self.assertEqual(resp.status_code, 200)
+
+        resp = self.client.get(basic_data.api_routes['alerts'])
+        data = json.loads(resp.content.decode("utf8"))
+        self.assertEqual(len(data), 2)
+
+        resp = self.client.get(basic_data.api_routes['alerts'] + str(data[0]["id"]) + "/")
+        self.assertEqual(resp.status_code, 200)
+
+        self.assertEqual(len(mail.outbox), 1)
