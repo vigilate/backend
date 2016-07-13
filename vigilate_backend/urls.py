@@ -10,6 +10,7 @@ router = routers.DefaultRouter()
 router.register(r'users', views.UserViewSet, "User")
 router.register(r'uprog', views.UserProgramsViewSet, "UserPrograms")
 router.register(r'alerts', views.AlertViewSet, "Alert")
+router.register(r'stations', views.StationViewSet, "Station")
 
 urlpatterns = [
     url('^api/v1/', include(router.urls)),

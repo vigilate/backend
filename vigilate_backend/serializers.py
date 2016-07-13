@@ -101,3 +101,12 @@ class AlertSerializerDetail(serializers.ModelSerializer):
     class Meta:
         model = models.Alert
         fields = ('id', 'user', 'program', 'cve')
+
+
+class StationSerializer(serializers.ModelSerializer):
+    """Serialisation of station
+    """
+
+    class Meta:
+        model = models.Station
+        fields = ('id', 'user', 'name')

@@ -102,3 +102,12 @@ class Alert(models.Model):
 
     def number_cve(self):
         return self.cve.count()
+
+
+class Station(models.Model):
+    """Station model
+    """
+    
+    id = models.AutoField(primary_key=True, unique=True)
+    user = models.ForeignKey('User')
+    name = models.CharField(max_length=100)
