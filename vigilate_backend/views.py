@@ -51,7 +51,7 @@ class UserViewSet(viewsets.ModelViewSet):
             'Hello, your vigilate account has just been created.\nYou can now connect to the website with your mail address and your password.',
             'vigilate_2017@epitech.eu',
             [new_user.email],
-            fail_silently=False,
+            fail_silently=True,
         )
 
 class UserProgramsViewSet(viewsets.ModelViewSet):
