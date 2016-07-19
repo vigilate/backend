@@ -36,9 +36,11 @@ class VigilateMiddleware(object):
             mail_dest = q["user"].email
 
         if mail_dest:
-            mail.send_mail(mail_subject, mail_content, 'vigilate_2017@epitech.eu',
-                           [mail_dest], fail_silently=True)
-
+            try:
+                mail.send_mail(mail_subject, mail_content, 'vigilate_2017@epitech.eu',
+                               [mail_dest], fail_silently=True)
+            except ConnectionRefusedError as e:
+                print ("MAIL ERROR : ", e)
         sms_content = ""
         sms_dest = ""
         if len(thread_locals.queue[User.SMS]) == 1:
