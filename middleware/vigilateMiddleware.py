@@ -38,9 +38,11 @@ class VigilateMiddleware(object):
                     continue
                 else:
                     del prog_list[i]
+                i+=1
+
             q = thread_locals.queue[User.EMAIL][0]
-            mail_subject = "[Vigilate] Alert on %d programs" % len(thread_locals.queue[User.EMAIL])
-            mail_content = "A new vulnerability has been discovered on theses programs\n" + prog_list
+            mail_subject = "[Vigilate] Alert on %d programs" % len(prog_list)
+            mail_content = "A new vulnerability has been discovered on theses programs\n" + "\n".join(prog_list)
             mail_dest = q["user"].email
 
         if mail_dest:
