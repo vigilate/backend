@@ -45,14 +45,16 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         new_user = serializer.save()
-
-        send_mail(
-            'Vigilate account created',
-            'Hello, your vigilate account has just been created.\nYou can now connect to the website with your mail address and your password.',
-            'vigilate_2017@epitech.eu',
-            [new_user.email],
-            fail_silently=True,
-        )
+        try:
+            send_mail(
+                'Vigilate account created',
+                'Hello, your vigilate account has just been created.\nYou can now connect to the website with your mail address and your password.',
+                'vigilate_2017@epitech.eu',
+                [new_user.email],
+                fail_silently=True,
+            )
+        except ConnectionRefusedError as e:
+            print ("MAIL ERROR : ", e)
 
 class UserProgramsViewSet(viewsets.ModelViewSet):
     """View for users programs
