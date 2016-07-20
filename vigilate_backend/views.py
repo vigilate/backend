@@ -1,9 +1,11 @@
 import json
+import os
 from django.http import HttpResponse
-from vigilate_backend.settings import TESTING
+from vigilate_backend.settings import TESTING, BASE_DIR
 from django.db import IntegrityError
 from django.db.models import Q
 from django.contrib.auth.models import User as UserDjango
+from django.views.decorators.csrf import csrf_exempt
 from django.core.mail import send_mail
 from rest_framework import viewsets, status
 from rest_framework.decorators import list_route, permission_classes
@@ -101,7 +103,7 @@ class UserProgramsViewSet(viewsets.ModelViewSet):
         if TESTING:
             up_to_date = True
         for elem in query['programs_list']:
-            prog = UserPrograms.objects.filter(user_id=request.user.id, program_name=elem['program_name'], poste=query['poste'])
+            prog = UserPrograms.objects.filter(user_id=request.user.id, program_name=elem['program_name'], poste=query['station'])
 
             # if prog , user is already monitoring the given program, update is needed
             if prog:
@@ -124,7 +126,7 @@ class UserProgramsViewSet(viewsets.ModelViewSet):
 
                 (cpe, up_to_date) =  cpe_updater.get_cpe_from_name_version(elem['program_name'], elem['program_version'], up_to_date)
 
-                new_prog = UserPrograms(user_id=request.user, minimum_score=1, poste=query['poste'],
+                new_prog = UserPrograms(user_id=request.user, minimum_score=1, poste=query['station'],
                                         program_name=elem['program_name'], program_version=elem['program_version'], cpe=cpe)
                 if 'minimum_score' in elem:
                     new_prog.minimum_score = int(elem['minimum_score'])
@@ -133,7 +135,7 @@ class UserProgramsViewSet(viewsets.ModelViewSet):
                 alerts.check_prog(new_prog, request.user)
 
             if only_one_program:
-                obj = UserPrograms.objects.get(user_id=request.user.id, program_name=elem['program_name'], poste=query['poste'])
+                obj = UserPrograms.objects.get(user_id=request.user.id, program_name=elem['program_name'], poste=query['station'])
                 serializer = self.get_serializer(obj)
                 return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -178,3 +180,27 @@ class StationViewSet(viewsets.ModelViewSet):
             return Station.objects.all()
         else:
             return Station.objects.filter(user_id=self.request.user.id)
+
+@csrf_exempt
+def get_scanner(request):
+    if not request.user.is_authenticated():
+        return HttpResponse(status=403)
+
+    station_id = request.path.split('/')[-1]
+    try:
+        station_id_int = int(station_id)
+    except ValueError:
+        return HttpResponse(status=404)
+
+    with open(os.path.join(BASE_DIR, 'program_scanner/scanner.py'), 'r') as raw_scan:
+        conf_scan = raw_scan.read()
+
+    conf_scan = conf_scan.replace('DEFAULT_ID', station_id)
+    conf_scan = conf_scan.replace('DEFAULT_USER', request.user.email)
+    conf_scan = conf_scan.replace('DEFAULT_TOKEN', Station.objects.get(id=station_id_int).token)
+    conf_scan = conf_scan.replace('DEFAULT_URL', request.META['HTTP_HOST'])
+
+    rep = HttpResponse(content_type='text/x-python')
+    rep['Content-Disposition'] = 'attachment; filename=scanner.py'
+    rep.write(conf_scan)
+    return rep

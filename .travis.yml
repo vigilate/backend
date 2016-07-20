@@ -19,6 +19,8 @@ before_script:
   - mysql -e 'create database Vigilate;'
   - mkdir -p $HOME/lib/
   - INSTALL_DIR=$HOME/lib/ ./install-pyargon2.sh nosudo
+  - git submodule init
+  - git submodule update
 script:
   - python3 manage.py test vigilate_backend/
 

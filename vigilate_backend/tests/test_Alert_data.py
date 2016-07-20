@@ -1,14 +1,14 @@
 from dateutil.parser import parse as parse_date
 
-prog_not_vuln = {"program_name" : "firefox", "program_version" : "1337", "minimum_score": 0,"poste": 1}
-prog_vuln = {"program_name" : "bzip2", "program_version" : "1.0.6", "minimum_score": 1,"poste": 1}
-prog_vuln_multi = [prog_vuln, {"program_name" : "glibc", "program_version" : "2.23", "minimum_score": 1,"poste": 1}]
+prog_not_vuln = {"program_name" : "firefox", "program_version" : "1337", "minimum_score": 0,"station": 1}
+prog_vuln = {"program_name" : "bzip2", "program_version" : "1.0.6", "minimum_score": 1,"station": 1}
+prog_vuln_multi = [prog_vuln, {"program_name" : "glibc", "program_version" : "2.23", "minimum_score": 1,"station": 1}]
 
-prog_vuln_before_update = {"program_name" : "bzip2", "program_version" : "1.0.5", "minimum_score": 0,"poste": 1}
+prog_vuln_before_update = {"program_name" : "bzip2", "program_version" : "1.0.5", "minimum_score": 0,"station": 1}
 
-proglist_vuln = {"programs_list": [prog_vuln], "poste": 1}
-proglist_vuln_multi = {"programs_list": prog_vuln_multi, "poste": 1}
-proglist_vuln_before_update = {"programs_list": [prog_vuln_before_update], "poste": 1}
+proglist_vuln = {"programs_list": [prog_vuln], "station": 1}
+proglist_vuln_multi = {"programs_list": prog_vuln_multi, "station": 1}
+proglist_vuln_before_update = {"programs_list": [prog_vuln_before_update], "station": 1}
 
 cpes = [
     {"cpe": "bzip2:1.0.6", "product": "bzip2", "version": "1.0.6"},
