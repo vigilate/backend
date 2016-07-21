@@ -17,6 +17,7 @@ from vigilate_backend.models import User, UserPrograms, Alert, Station
 from vigilate_backend.serializers import UserSerializer, UserProgramsSerializer, AlertSerializer, AlertSerializerDetail, StationSerializer
 from vigilate_backend import alerts
 from vulnerability_manager import cpe_updater
+from vigilate_backend.VigilateAuthentication import VigilateAuthentication
 
 def home(request):
     """Vigilate root url content
@@ -75,6 +76,7 @@ class UserProgramsViewSet(viewsets.ModelViewSet):
     def create(self, request):
         """Create one or multiple program at once
         """
+
         result = set()
         query = get_query(request)
         if not query:
@@ -191,10 +193,14 @@ class StationViewSet(viewsets.ModelViewSet):
 
 @csrf_exempt
 def get_scanner(request):
-    if not request.user.is_authenticated():
+
+    auth = VigilateAuthentication()
+    auth_result = auth.authenticate(request)
+    if not auth_result:
         return HttpResponse(status=403)
 
-    station_id = request.path.split('/')[-1]
+    request.user = auth_result[0]
+    station_id = list(filter(None, request.path.split('/')))[-1]
     try:
         station_id_int = int(station_id)
     except ValueError:
@@ -207,6 +213,7 @@ def get_scanner(request):
     conf_scan = conf_scan.replace('DEFAULT_USER', request.user.email)
     conf_scan = conf_scan.replace('DEFAULT_TOKEN', Station.objects.get(id=station_id_int).token)
     conf_scan = conf_scan.replace('DEFAULT_URL', request.META['HTTP_HOST'])
+    conf_scan = conf_scan.replace('DEFAULT_SCHEME', request.META['REQUEST_SCHEME'])
 
     rep = HttpResponse(content_type='text/x-python')
     rep['Content-Disposition'] = 'attachment; filename=scanner.py'

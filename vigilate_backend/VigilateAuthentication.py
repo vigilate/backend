@@ -31,7 +31,6 @@ class VigilateAuthentication(authentication.BasicAuthentication):
         try:
             query = get_query(request)
             user = User.objects.get(email=email)
-            print(request.path)
             if not user.check_password(pwd) \
                and not (query \
                      and "poste" in query \
