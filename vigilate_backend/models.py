@@ -75,7 +75,7 @@ class UserPrograms(models.Model):
     program_version = models.CharField(max_length=100)
     minimum_score = models.IntegerField(default=0)
     user_id = models.ForeignKey('User')
-    poste = models.IntegerField()
+    poste = models.ForeignKey('Station')
     cpe = models.ForeignKey('vulnerability_manager.Cpe')
     sms_score = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)], default=0)
     email_score = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)], default=0)
