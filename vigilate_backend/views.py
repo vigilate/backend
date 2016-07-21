@@ -80,13 +80,12 @@ class UserProgramsViewSet(viewsets.ModelViewSet):
         if not query:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
-        user = User.objects.filter(id=request.user.id)[0]
+        if 'poste' not in query:
+            return Response("Missing 'poste' field", status=status.HTTP_400_BAD_REQUEST)
+        if not Station.objects.filter(user=request.user, id=int(query['poste'])).exists():
+            return Response("Invalide station id", status=status.HTTP_400_BAD_REQUEST)
 
-        if 'poste' not in query or len(Station.objects.filter(id=int(query['poste']))) == 0:
-            station = Station(user=user, name="default")
-            station.save()
-        else:
-            station = Station.objects.filter(id=query['poste'])[0]
+        station = Station.objects.get(id=int(query['poste']))
 
         only_one_program = False
         if not "programs_list" in query:

@@ -109,6 +109,6 @@ class Station(models.Model):
     """
     
     id = models.AutoField(primary_key=True, unique=True)
-    token = models.CharField(max_length=100)
+    token = models.CharField(max_length=100, default="")
     user = models.ForeignKey('User')
     name = models.CharField(max_length=100)
