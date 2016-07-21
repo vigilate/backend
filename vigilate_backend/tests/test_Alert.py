@@ -24,6 +24,21 @@ class AlertTestCase(APITestCase):
                                        b":"+str.encode(basic_data.user['password'])).decode("utf8")
         self.client.credentials(HTTP_AUTHORIZATION='Basic ' + credentials)
 
+        data = test_Alert_data.scanner
+        data["user"] = self.new_user["id"]
+        resp = self.client.post(basic_data.api_routes['stations'],
+                                json.dumps(data),
+                                content_type='application/json')
+        self.station = json.loads(resp.content.decode("utf-8"))
+        for d in [test_Alert_data.prog_not_vuln,
+                  test_Alert_data.prog_vuln,
+                  test_Alert_data.prog_vuln2,
+                  test_Alert_data.prog_vuln_before_update,
+                  test_Alert_data.proglist_vuln,
+                  test_Alert_data.proglist_vuln_multi,
+                  test_Alert_data.proglist_vuln_before_update]:
+            d["poste"] = self.station["id"]
+
     def addVuln(self, check_prog = False):
         for cpe in test_Alert_data.cpes:
             Cpe.objects.get_or_create(**cpe)

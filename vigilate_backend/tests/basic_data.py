@@ -7,5 +7,6 @@ api_routes = {
     "api" : "/api/v1/",
     "alerts" : "/api/v1/alerts/",
     "programs" : "/api/v1/uprog/",
-    "users" : "/api/v1/users/"
+    "users" : "/api/v1/users/",
+    "stations" : "/api/v1/stations/"
 }
