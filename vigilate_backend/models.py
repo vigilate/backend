@@ -4,6 +4,7 @@ import string
 import PyArgon2
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.utils.crypto import get_random_string
 
 # Create your models here.
 
@@ -63,6 +64,13 @@ class User(models.Model):
         ret = PyArgon2.Check_pwd(pwd.encode(), salt.encode(), binascii.unhexlify(hsh))
         return ret
 
+    def is_valid_scanner_token(self, id_scanner, token):
+        """Check if id_scanner is a scanner of user and that the token match
+        """
+        if not Station.objects.filter(user=self, id=id_scanner, token=token).exists():
+            print("Not valid")
+            return False
+        return True
 
 
 
@@ -107,8 +115,14 @@ class Alert(models.Model):
 class Station(models.Model):
     """Station model
     """
+
+    def get_random_token():
+        return get_random_string(length=100)
     
     id = models.AutoField(primary_key=True, unique=True)
-    token = models.CharField(max_length=100, default="")
+    token = models.CharField(max_length=100, default=get_random_token)
     user = models.ForeignKey('User')
     name = models.CharField(max_length=100)
+
+    def generate_token(self):
+        self.token = get_random_token()

@@ -3,7 +3,7 @@ from django.contrib.auth.models import User as UserDjango
 from rest_framework import authentication
 from rest_framework import exceptions
 from vigilate_backend.models import User
-
+from vigilate_backend.utils import get_query
 class VigilateAuthentication(authentication.BasicAuthentication):
     """Vigilate authentication class using pyargon2
     """
@@ -29,8 +29,15 @@ class VigilateAuthentication(authentication.BasicAuthentication):
         user = None
 
         try:
+            query = get_query(request)
             user = User.objects.get(email=email)
-            if not user.check_password(pwd):
+            print(request.path)
+            if not user.check_password(pwd) \
+               and not (query \
+                     and "poste" in query \
+                     and (isinstance(query["poste"], int) or query["poste"].isnumeric()) \
+                     and user.is_valid_scanner_token(int(query["poste"]), pwd) \
+                     and request.path == "/api/v1/uprog/"):
                 raise exceptions.AuthenticationFailed('Wrong password')
 
         except User.DoesNotExist:
