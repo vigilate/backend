@@ -79,7 +79,7 @@ class UserProgramsViewSet(viewsets.ModelViewSet):
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
         user = User.objects.filter(id=request.user.id)[0]
-        open("test.result", "a+").write(str(type(query['poste']))+"\n")
+
         if 'poste' not in query or len(Station.objects.filter(id=int(query['poste']))) == 0:
             station = Station(user=user, name="default")
             station.save()
