@@ -77,7 +77,7 @@ class AlertSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Alert
-        fields = ('id', 'user', 'program', 'number_cve', 'max_cvss', 'program_info')
+        fields = ('id', 'user', 'program', 'number_cve', 'max_cvss', 'program_info', 'view')
 
     def create(self, validated_data):
         """Create an alert
@@ -91,6 +91,7 @@ class AlertSerializer(serializers.ModelSerializer):
         instance.user = validated_data.get('user', instance.user)
         instance.program = validated_data.get('program', instance.program)
         instance.cve = validated_data.get('cve', instance.cve)
+        instance.view = validated_data.get('view', instance.view)
         instance.save()
         return instance
 
