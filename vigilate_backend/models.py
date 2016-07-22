@@ -107,7 +107,9 @@ class Alert(models.Model):
     view = models.BooleanField(default=False)
 
     def max_cvss(self):
-         return max(self.cve.values_list("cvss_score", flat=True))
+        if self.cve.values_list("cvss_score", flat=True):
+            return max(self.cve.values_list("cvss_score", flat=True))
+        return 0
 
     def program_info(self):
         return {k:getattr(self.program, k) for k in ['program_name', 'program_version']}
