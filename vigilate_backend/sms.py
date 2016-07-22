@@ -14,7 +14,7 @@ class Sms(object):
         return f_data
 
     def send_sms(self, phone, message):
-        return self.send_sms_api('prune.budowski@gmail.com',
-                          '59ba30da4aeb5161661e05b18290198ecc02d61f',
+        return self.send_sms_api('prune.budowski@epitech.eu',
+                          'b3dda711239f3e29298d229235821a434002c50d',
                           phone, 'test', message)
 
