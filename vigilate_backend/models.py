@@ -86,8 +86,11 @@ class UserPrograms(models.Model):
     poste = models.ForeignKey('Station')
     cpe = models.ForeignKey('vulnerability_manager.Cpe')
     sms_score = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)], default=0)
+    sms_enabled = models.BooleanField(default=True)
     email_score = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)], default=0)
+    email_enabled = models.BooleanField(default=True)
     web_score = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)], default=0)
+    web_enabled = models.BooleanField(default=True)
     alert_type_default = models.BooleanField(default=True)
 
     def is_vulnerable(self):
