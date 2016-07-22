@@ -36,3 +36,6 @@ cve_cpe = {
 }
 
 scanner = {"name": "Test station"}
+
+set_alert_as_new = {"new" : True}
+set_alert_as_old = {"new" : False}

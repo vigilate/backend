@@ -177,6 +177,20 @@ class AlertViewSet(viewsets.ModelViewSet):
         else:
             return Alert.objects.filter(user_id=self.request.user.id)
 
+    def partial_update(self, serializer, pk):
+        if (not self.request.data) or (not len(self.request.data)):
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        #To change an alert status
+        if "new" in self.request.data:
+            if self.request.data["new"] in [True, False]:
+                alert = Alert.objects.filter(id=pk)
+                if len(alert) == 1 and alert[0].new != self.request.data["new"]:
+                    alert[0].new = self.request.data["new"]
+                    alert[0].save()
+                    return Response(status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
 
 class StationViewSet(viewsets.ModelViewSet):
     """View for station

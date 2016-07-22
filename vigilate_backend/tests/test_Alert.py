@@ -163,3 +163,36 @@ class AlertTestCase(APITestCase):
         self.assertEqual(resp.status_code, 200)
 
         self.assertEqual(len(mail.outbox), 1)
+
+    def test_update_alert_status(self):
+        self.addVuln()
+
+        resp = self.client.post(basic_data.api_routes['programs'],
+                                json.dumps(test_Alert_data.prog_vuln),
+                                content_type="application/json")
+
+        self.assertEqual(resp.status_code, 200)
+
+        alert = Alert.objects.all()
+        self.assertEqual(len(alert), 1)
+        alert = alert[0]
+
+        self.assertEqual(alert.new, True)
+
+        # Set to False
+        resp = self.client.patch(basic_data.api_routes['alerts']+str(alert.id)+"/",
+                                json.dumps(test_Alert_data.set_alert_as_old),
+                                content_type="application/json")
+        self.assertEqual(resp.status_code, 200)
+        alert = Alert.objects.all()[0]
+
+        self.assertEqual(alert.new, False)
+
+        # Set to True
+        resp = self.client.patch(basic_data.api_routes['alerts']+str(alert.id)+"/",
+                                 json.dumps(test_Alert_data.set_alert_as_new),
+                                 content_type="application/json")
+        self.assertEqual(resp.status_code, 200)
+        alert = Alert.objects.all()[0]
+
+        self.assertEqual(alert.new, True)
