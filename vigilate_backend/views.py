@@ -8,7 +8,7 @@ from django.contrib.auth.models import User as UserDjango
 from django.views.decorators.csrf import csrf_exempt
 from django.core.mail import send_mail
 from rest_framework import viewsets, status
-from rest_framework.decorators import list_route, permission_classes
+from rest_framework.decorators import list_route, permission_classes, detail_route
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from pkg_resources import parse_version
@@ -167,7 +167,39 @@ class AlertViewSet(viewsets.ModelViewSet):
         else:
             return Alert.objects.filter(user_id=self.request.user.id)
 
+    @detail_route(methods=['get'], url_path='mark_read')
+    def mark_read(self, request, pk=None):
+        alert_id = request.path.split('/')[-1]
+        try:
+            alert_id_int = int(alert_id)
+        except ValueError:
+            return HttpResponse(status=404)
 
+        try:
+            alert = Alerts.objects.get(id=alert_id_int)
+        except Alert.DoesNotExist:
+            return HttpResponse(status=404)            
+        alert.view = True
+        alert.save()
+        return Response(status=status.HTTP_200_OK)
+
+    @detail_route(methods=['get'], url_path='mark_unread')
+    def mark_unread(self, request, pk=None):
+        alert_id = request.path.split('/')[-1]
+        try:
+            alert_id_int = int(alert_id)
+        except ValueError:
+            return HttpResponse(status=404)
+
+        try:
+            alert = Alerts.objects.get(id=alert_id_int)
+        except Alert.DoesNotExist:
+            return HttpResponse(status=404)            
+        alert.view = False
+        alert.save()
+        return Response(status=status.HTTP_200_OK)
+
+        
 class StationViewSet(viewsets.ModelViewSet):
     """View for station
     """
