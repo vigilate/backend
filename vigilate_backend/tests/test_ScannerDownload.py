@@ -7,7 +7,7 @@ from vigilate_backend import settings
 from vigilate_backend.tests import basic_data
 from vigilate_backend.tests import test_ScannerDownload_data
 
-class ScannerTokenTestCase(APITestCase):
+class ScannerDownloadTestCase(APITestCase):
     def setUp(self):
         self.client = APIClient()
 
