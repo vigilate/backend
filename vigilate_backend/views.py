@@ -213,7 +213,6 @@ class StationViewSet(viewsets.ModelViewSet):
 
 @csrf_exempt
 def get_scanner(request):
-
     auth = VigilateAuthentication()
     auth_result = auth.authenticate(request)
     if not auth_result:
@@ -221,6 +220,7 @@ def get_scanner(request):
 
     request.user = auth_result[0]
     station_id = list(filter(None, request.path.split('/')))[-1]
+
     try:
         station_id_int = int(station_id)
     except ValueError:
@@ -232,8 +232,8 @@ def get_scanner(request):
     conf_scan = conf_scan.replace('DEFAULT_ID', station_id)
     conf_scan = conf_scan.replace('DEFAULT_USER', request.user.email)
     conf_scan = conf_scan.replace('DEFAULT_TOKEN', Station.objects.get(id=station_id_int).token)
-    conf_scan = conf_scan.replace('DEFAULT_URL', request.META['HTTP_HOST'])
-    conf_scan = conf_scan.replace('DEFAULT_SCHEME', request.META['REQUEST_SCHEME'])
+    conf_scan = conf_scan.replace('DEFAULT_URL', request.get_host())
+    conf_scan = conf_scan.replace('DEFAULT_SCHEME', request.scheme)
 
     rep = HttpResponse(content_type='text/x-python')
     rep['Content-Disposition'] = 'attachment; filename=scanner.py'
