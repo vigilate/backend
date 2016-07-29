@@ -22,5 +22,5 @@ urlpatterns = [
     url('^update_cwe$', views_vuln_m.update_cwe),
     url('^update_all_cve_using_files$', views_vuln_m.update_all_cve_using_files),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    url('^get_scanner/', views.get_scanner)
+    url('^get_scanner/([0-9]{1,})/', views.get_scanner)
 ]

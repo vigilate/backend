@@ -212,14 +212,14 @@ class StationViewSet(viewsets.ModelViewSet):
             return Station.objects.filter(user_id=self.request.user.id)
 
 @csrf_exempt
-def get_scanner(request):
+def get_scanner(request, station_id):
+
     auth = VigilateAuthentication()
     auth_result = auth.authenticate(request)
     if not auth_result:
         return HttpResponse(status=403)
 
     request.user = auth_result[0]
-    station_id = list(filter(None, request.path.split('/')))[-1]
 
     try:
         station_id_int = int(station_id)

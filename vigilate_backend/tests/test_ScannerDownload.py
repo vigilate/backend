@@ -4,9 +4,7 @@ import base64
 from rest_framework.test import APITestCase, APIClient
 from vigilate_backend import models
 from vigilate_backend import settings
-from vigilate_backend.tests import basic_data
-from vigilate_backend.tests import test_ScannerDownload_data
-
+from vigilate_backend.tests import test_ScannerDownload_data, basic_data
 class ScannerDownloadTestCase(APITestCase):
     def setUp(self):
         self.client = APIClient()
@@ -31,9 +29,9 @@ class ScannerDownloadTestCase(APITestCase):
     def test_download_scanner(self):
         self.login(basic_data.user['email'], basic_data.user['password'])
 
-        station = self.create_station(test_ScannerDownload_data.scanner["id"])
+        station = self.create_station(test_ScannerDownload_data.station["name"])
 
-        res = self.client.get(basic_data.api_routes['get_scanner']+str(test_ScannerDownload_data.scanner["id"])+"/");
+        res = self.client.get(basic_data.api_routes['get_scanner']+str(station['id'])+"/")
 
         self.assertEqual(res.status_code, 200)
 

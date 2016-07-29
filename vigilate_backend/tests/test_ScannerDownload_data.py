@@ -1,1 +1,3 @@
-scanner = {"id": 1}
+station = {
+    "name": "Default"
+}
