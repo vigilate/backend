@@ -3,14 +3,20 @@ from django.contrib.auth.models import User as UserDjango
 from rest_framework import authentication
 from rest_framework import exceptions
 from vigilate_backend.models import User
-from vigilate_backend.utils import get_query
+from vigilate_backend.utils import get_query, avoid_id_falsfication
 class VigilateAuthentication(authentication.BasicAuthentication):
     """Vigilate authentication class using pyargon2
     """
 
+    def security_check_then_return(self, user, request):
+        if avoid_id_falsfication(user, request):
+            return (user, None)
+        raise exceptions.PermissionDenied()
+
     def authenticate(self, request):
         """Check authentication of each request
         """
+
         authheader = request.META.get('HTTP_AUTHORIZATION', '')
         if not authheader:
             return None
@@ -43,7 +49,7 @@ class VigilateAuthentication(authentication.BasicAuthentication):
             pass
 
         if user:
-            return (user, None)
+            return self.security_check_then_return(user, request)
 
         try:
             user = UserDjango.objects.get(username=email)
@@ -53,6 +59,5 @@ class VigilateAuthentication(authentication.BasicAuthentication):
         except UserDjango.DoesNotExist:
             raise exceptions.AuthenticationFailed('No such user')
 
-
-        return (user, None)
-
+        if user:
+            return self.security_check_then_return(user, request)
