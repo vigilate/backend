@@ -31,3 +31,13 @@ def parse_cpe(cpe):
     res['software'] = cpe[3]
     res['version'] = cpe[4]
     return res
+
+def avoid_id_falsfication(user, request):
+    if request.method in ["POST","PATCH","PUT","DELETE"]:
+        if "user" not in request.data:
+            return True
+
+        if user.is_superuser or int(request.data['user']) == user.id:
+            return True
+        return False
+    return True
