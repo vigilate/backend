@@ -8,5 +8,6 @@ api_routes = {
     "alerts" : "/api/v1/alerts/",
     "programs" : "/api/v1/uprog/",
     "users" : "/api/v1/users/",
-    "stations" : "/api/v1/stations/"
+    "stations" : "/api/v1/stations/",
+    "get_scanner": "/get_scanner/"
 }
