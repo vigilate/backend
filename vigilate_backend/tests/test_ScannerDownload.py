@@ -29,9 +29,11 @@ class ScannerDownloadTestCase(APITestCase):
     def test_download_scanner(self):
         self.login(basic_data.user['email'], basic_data.user['password'])
 
+        # Existing station
         station = self.create_station(test_ScannerDownload_data.station["name"])
-
         res = self.client.get(basic_data.api_routes['get_scanner']+str(station['id'])+"/")
-
         self.assertEqual(res.status_code, 200)
 
+        # Unknown station
+        res =  self.client.get(basic_data.api_routes['get_scanner']+"1337/")
+        self.assertEqual(res.status_code, 404)

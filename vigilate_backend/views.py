@@ -223,9 +223,10 @@ def get_scanner(request, station_id):
 
     try:
         station_id_int = int(station_id)
-    except ValueError:
+        Station.objects.filter(id=station_id_int)[0]
+    except (ValueError, IndexError):
         return HttpResponse(status=404)
-
+    
     with open(os.path.join(BASE_DIR, 'program_scanner/scanner.py'), 'r') as raw_scan:
         conf_scan = raw_scan.read()
 
