@@ -31,7 +31,7 @@ def check_cve(cve):
     progs = models.UserPrograms.objects.filter(cpe__in=cpes)
 
     for prog in progs:
-        create_alert(prog, cve, prog.user_id)
+        create_alert(prog, cve, prog.user)
 
 
 def remove_old_alerts(prog):

@@ -40,7 +40,7 @@ class UserProgramsTestCase(APITestCase):
                                     content_type="application/x-www-form-urlencoded")
 
             self.assertEqual(resp.status_code, 200)
-            user_progs = models.UserPrograms.objects.filter(user_id=self.new_user["id"])
+            user_progs = models.UserPrograms.objects.filter(user=self.new_user["id"])
 
             prog_saved = {"program_name" : user_progs[0].program_name, "program_version" : user_progs[0].program_version}
             prog_sent = {"program_name" :  prog["program_name"], "program_version" : prog["program_version"]}
@@ -54,7 +54,7 @@ class UserProgramsTestCase(APITestCase):
                                     content_type="application/json")
             
             self.assertEqual(resp.status_code, 200)
-            user_progs = models.UserPrograms.objects.filter(user_id=self.new_user["id"])
+            user_progs = models.UserPrograms.objects.filter(user=self.new_user["id"])
 
             prog_saved = {"program_name" : user_progs[0].program_name, "program_version" : user_progs[0].program_version}
             prog_sent = {"program_name" :  prog["program_name"], "program_version" : prog["program_version"]}
@@ -67,7 +67,7 @@ class UserProgramsTestCase(APITestCase):
             resp = self.client.post(basic_data.api_routes['programs'], json.dumps(prog_list),
                                     content_type="application/x-www-form-urlencoded")
             self.assertEqual(resp.status_code, 200)
-            user_progs = models.UserPrograms.objects.filter(user_id=self.new_user["id"])
+            user_progs = models.UserPrograms.objects.filter(user=self.new_user["id"])
             database_programs_json = []
             for prog in user_progs:
                 elem = {"program_name" : prog.program_name, "program_version" : prog.program_version}
