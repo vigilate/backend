@@ -52,7 +52,7 @@
     "program_name": "",
     "program_version": "",
     "minimum_score": 0,
-    "user_id": 0
+    "user": 0
   }
   ```
 
@@ -62,7 +62,7 @@
     **Content:**
     
     ```javascript
-    {"minimum_score": 0, "user_id": 2, "program_name": "firefox", "program_version": "0"}
+    {"minimum_score": 0, "user": 2, "program_name": "firefox", "program_version": "0"}
     ```
 
 **Delete Program**
@@ -99,5 +99,5 @@
     **Content:**
     
     ```javascript
-    [{"program_name":"firefox","program_version":"42","minimum_score":0,"user_id":1}]
+    [{"program_name":"firefox","program_version":"42","minimum_score":0,"user":1}]
     ```
