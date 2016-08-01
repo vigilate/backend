@@ -1,3 +1,4 @@
 [submodule "program_scanner"]
 	path = program_scanner
 	url = https://github.com/vigilate/program_scanner.git
+	depth = 1
