@@ -100,8 +100,8 @@ class UserProgramsViewSet(viewsets.ModelViewSet):
             elem['program_name'] = query['program_name']
             elem['program_score'] = query['minimum_score']
             query['programs_list'] = [elem]
-            if UserPrograms.objects.filter(user=request.user.id, program_name=elem['program_name']).exists():
-                ret = {"detail": "Program %s already exists" % elem['program_name']}
+            if UserPrograms.objects.filter(user=request.user.id, program_name=elem['program_name'], poste=station).exists():
+                ret = {"detail": "Program %s already exists for station: %s" % (elem['program_name'], query['poste'])}
                 return Response(ret, status=status.HTTP_400_BAD_REQUEST)
 
         for elem in query['programs_list']:
@@ -115,7 +115,7 @@ class UserProgramsViewSet(viewsets.ModelViewSet):
         for elem in query['programs_list']:
             prog = UserPrograms.objects.filter(user=request.user.id, program_name=elem['program_name'], poste=station)
 
-            # if prog , user is already monitoring the given program, update is needed
+            # if prog, user is already monitoring the given program, update is needed
             if prog:
                 
                 prog = prog[0]

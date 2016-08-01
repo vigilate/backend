@@ -36,8 +36,14 @@ def avoid_id_falsfication(user, request):
     if request.method in ["POST","PATCH","PUT","DELETE"]:
         if "user" not in request.data:
             return True
-        if isinstance(request.data['user'], int)  and \
-           (user.is_superuser or request.data['user'] == user.id):
+
+        if user.is_superuser:
             return True
-        return False
+        try:
+            request.data['user'] = int(request.data['user'])
+        except ValueError:
+            return False
+
+        return request.data['user'] == user.id
+
     return True
