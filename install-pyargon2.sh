@@ -10,7 +10,8 @@ fi
 set -ex
     
 
-git clone https://github.com/vigilate/module_com_bdd.git
+git submodule init
+git submodule update
 make -C module_com_bdd
 
 if [ $SUDO -eq 1 ]

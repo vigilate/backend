@@ -1,3 +1,6 @@
 [submodule "program_scanner"]
 	path = program_scanner
 	url = https://github.com/vigilate/program_scanner.git
+[submodule "module_com_bdd"]
+	path = module_com_bdd
+	url = https://github.com/vigilate/module_com_bdd.git
