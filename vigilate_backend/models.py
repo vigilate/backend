@@ -13,7 +13,7 @@ class User(models.Model):
     """
     
     id = models.AutoField(primary_key=True, unique=True)
-    email = models.CharField(max_length=50, unique=True)
+    email = models.EmailField(max_length=50, unique=True)
     password = models.TextField(null=False)
     phone = models.CharField(max_length=20, default="")
     user_type = models.IntegerField(null=False, default=0)
