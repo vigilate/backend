@@ -16,7 +16,7 @@ class User(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
     email = models.EmailField(max_length=50, unique=True)
     password = models.TextField(null=False)
-    phone = PhoneNumberField()
+    phone = PhoneNumberField(null=True)
     user_type = models.IntegerField(null=False, default=0)
     contrat = models.IntegerField(null=False, default=0)
     id_dealer = models.IntegerField(default=0)
