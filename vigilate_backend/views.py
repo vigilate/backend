@@ -90,6 +90,7 @@ class UserProgramsViewSet(viewsets.ModelViewSet):
         station = Station.objects.get(id=int(query['poste']))
 
         only_one_program = False
+        extra_field = {}
         if not "programs_list" in query:
             if not all(x in query for x in ['program_version', 'program_name', 'minimum_score']):
                 return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -99,6 +100,12 @@ class UserProgramsViewSet(viewsets.ModelViewSet):
             elem['program_version'] = query['program_version']
             elem['program_name'] = query['program_name']
             elem['program_score'] = query['minimum_score']
+
+            for k in ['sms_score', 'sms_enabled', 'email_score', 'email_enabled',
+                      'web_score', 'web_enabled', 'alert_type_default']:
+                if k in query:
+                    extra_field[k] = query[k]
+
             query['programs_list'] = [elem]
             if UserPrograms.objects.filter(user=request.user.id, program_name=elem['program_name'], poste=station).exists():
                 ret = {"detail": "Program %s already exists for station: %s" % (elem['program_name'], query['poste'])}
@@ -140,6 +147,8 @@ class UserProgramsViewSet(viewsets.ModelViewSet):
                                         program_name=elem['program_name'], program_version=elem['program_version'], cpe=cpe)
                 if 'minimum_score' in elem:
                     new_prog.minimum_score = int(elem['minimum_score'])
+                for f in extra_field:
+                    setattr(new_prog, f, int(extra_field[f]))
 
                 new_prog.save()
                 alerts.check_prog(new_prog, request.user)
