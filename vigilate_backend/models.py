@@ -5,6 +5,7 @@ import PyArgon2
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils.crypto import get_random_string
+from phonenumber_field.modelfields import PhoneNumberField
 
 # Create your models here.
 
@@ -15,7 +16,7 @@ class User(models.Model):
     id = models.AutoField(primary_key=True, unique=True)
     email = models.EmailField(max_length=50, unique=True)
     password = models.TextField(null=False)
-    phone = models.CharField(max_length=20, default="")
+    phone = PhoneNumberField(null=True)
     user_type = models.IntegerField(null=False, default=0)
     contrat = models.IntegerField(null=False, default=0)
     id_dealer = models.IntegerField(default=0)
