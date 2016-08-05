@@ -229,10 +229,11 @@ def get_scanner(request, station_id):
 
     try:
         auth_result = auth.authenticate(request)
+        if not auth_result:
+            return HttpResponse(ret % "Unauthenticated", status=403)
+        request.user = auth_result[0]
     except AuthenticationFailed as e:
         return HttpResponse(ret % e, status=401)
-
-    request.user = auth_result[0]
 
     try:
         station_id_int = int(station_id)
