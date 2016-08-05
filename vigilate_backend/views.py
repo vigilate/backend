@@ -68,9 +68,9 @@ class UserViewSet(viewsets.ModelViewSet):
         if not request.user.is_superuser and request.user.id != pk:
             return HttpResponse(ret % "Forbidden",status=403)
 
-        data = {"programs" : len(UserPrograms.objects.filter(user=pk)),
-                "stations" : len(Station.objects.filter(user=pk)),
-                "alerts": len(Alert.objects.filter(user=pk))}
+        data = {"programs" : UserPrograms.objects.filter(user=pk).count(),
+                "stations" : Station.objects.filter(user=pk).count(),
+                "alerts": Alert.objects.filter(user=pk).count()}
 
         return HttpResponse(json.dumps(data))
 
