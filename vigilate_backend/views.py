@@ -60,6 +60,21 @@ class UserViewSet(viewsets.ModelViewSet):
         except ConnectionRefusedError as e:
             print ("MAIL ERROR : ", e)
 
+    @detail_route(methods=['get'], url_path='stats')
+    def stats(self, request, pk=None):
+        ret = '{"detail":"%s"}'
+
+        pk = int(pk)
+        if not request.user.is_superuser and request.user.id != pk:
+            return HttpResponse(ret % "Forbidden",status=403)
+
+        data = {"programs" : len(UserPrograms.objects.filter(user=pk)),
+                "stations" : len(Station.objects.filter(user=pk)),
+                "alerts": len(Alert.objects.filter(user=pk))}
+
+        return HttpResponse(json.dumps(data))
+
+
 class UserProgramsViewSet(viewsets.ModelViewSet):
     """View for users programs
     """
