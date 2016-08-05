@@ -11,6 +11,7 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import list_route, permission_classes, detail_route
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.exceptions import AuthenticationFailed
 from pkg_resources import parse_version
 from vigilate_backend.utils import get_query, parse_cpe
 from vigilate_backend.models import User, UserPrograms, Alert, Station
@@ -223,10 +224,13 @@ class StationViewSet(viewsets.ModelViewSet):
 @csrf_exempt
 def get_scanner(request, station_id):
 
+    ret = '{"detail":"%s"}'
     auth = VigilateAuthentication()
-    auth_result = auth.authenticate(request)
-    if not auth_result:
-        return HttpResponse(status=403)
+
+    try:
+        auth_result = auth.authenticate(request)
+    except AuthenticationFailed as e:
+        return HttpResponse(ret % e, status=401)
 
     request.user = auth_result[0]
 
@@ -235,7 +239,7 @@ def get_scanner(request, station_id):
         Station.objects.filter(id=station_id_int)[0]
     except (ValueError, IndexError):
         return HttpResponse(status=404)
-    
+
     with open(os.path.join(BASE_DIR, 'program_scanner/scanner.py'), 'r') as raw_scan:
         conf_scan = raw_scan.read()
 
