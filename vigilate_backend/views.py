@@ -124,7 +124,7 @@ class UserProgramsViewSet(viewsets.ModelViewSet):
 
             query['programs_list'] = [elem]
             if UserPrograms.objects.filter(user=request.user.id, program_name=elem['program_name'], poste=station).exists():
-                ret = {"detail": "Program %s already exists for station: %s" % (elem['program_name'], query['poste'])}
+                ret = {"detail": "Program %s already exists for station: %s" % (elem['program_name'], station.name)}
                 return Response(ret, status=status.HTTP_400_BAD_REQUEST)
 
         for elem in query['programs_list']:
