@@ -115,4 +115,5 @@ class StationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Station
-        fields = ('id', 'user', 'name', 'token')
+        fields = ('id', 'user', 'name')
+        

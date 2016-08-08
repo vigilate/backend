@@ -34,7 +34,7 @@ class ScannerTokenTestCase(APITestCase):
 
         station = self.create_station(test_ScannerToken_data.scanner["name"])
         print(station)
-        self.login(basic_data.user['email'], station["token"])
+        self.login(basic_data.user['email'], models.Station.objects.get(id=station["id"]).token)
         test_ScannerToken_data.prog_list_to_submit["poste"] = station["id"]
         resp = self.client.post(basic_data.api_routes['programs'],
                                 json.dumps(test_ScannerToken_data.prog_list_to_submit),
@@ -64,7 +64,7 @@ class ScannerTokenTestCase(APITestCase):
         station_bad = self.create_station(test_ScannerToken_data.scanner["name"])
         station = self.create_station(test_ScannerToken_data.scanner["name"])
         print(station)
-        self.login(basic_data.user['email'], station["token"])
+        self.login(basic_data.user['email'], models.Station.objects.get(id=station["id"]).token)
         test_ScannerToken_data.prog_list_to_submit["poste"] = station_bad["id"]
         resp = self.client.post(basic_data.api_routes['programs'],
                                 json.dumps(test_ScannerToken_data.prog_list_to_submit),
