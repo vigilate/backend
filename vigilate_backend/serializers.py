@@ -24,13 +24,13 @@ class UserSerializer(serializers.ModelSerializer):
         return user
 
     def validate(self, data):
-        if not 'id' in data :
+        if not hasattr(self.instance, "id"):
             return data
         
-        prev_state = models.User.objects.get(id=data['id'])
+        prev_state = models.User.objects.get(id=self.instance.id)
         if 'default_alert_type' in data and data['default_alert_type'] == models.User.SMS and\
            (('phone' in data and not data['phone']) or (not 'phone' in data and not prev_state.phone)):
-            raise serializers.ValidationError('Cannot enable sms alert  for an user without a phone number registered')
+            raise serializers.ValidationError({'detail': 'Cannot enable sms alert for an user without a phone number registered'})
         return data
 
     def update(self, instance, validated_data):
@@ -65,7 +65,7 @@ class UserProgramsSerializer(serializers.ModelSerializer):
     def validate(self, data):
         if (not 'alert_type_default' in data or not data['alert_type_default']) and\
            ('sms_enabled' in data and data['sms_enabled']) and not data['user'].phone:
-            raise serializers.ValidationError('Cannot enable sms alert  for an user without a phone number registered')
+            raise serializers.ValidationError({'detail': 'Cannot enable sms alert for an user without a phone number registered'})
         return data
 
     def update(self, instance, validated_data):
