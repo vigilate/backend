@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from vigilate_backend import models
+from rest_framework import status
+from rest_framework.response import Response
 from vulnerability_manager.serializers import CveSerializer
 
 class UserSerializer(serializers.ModelSerializer):
@@ -20,6 +22,16 @@ class UserSerializer(serializers.ModelSerializer):
             user.set_password(validated_data['password'])
         user.save()
         return user
+
+    def validate(self, data):
+        if not hasattr(self.instance, "id"):
+            return data
+        
+        prev_state = models.User.objects.get(id=self.instance.id)
+        if 'default_alert_type' in data and data['default_alert_type'] == models.User.SMS and\
+           (('phone' in data and not data['phone']) or (not 'phone' in data and not prev_state.phone)):
+            raise serializers.ValidationError({'detail': 'Cannot enable sms alert for an user without a phone number registered'})
+        return data
 
     def update(self, instance, validated_data):
         """Update un user
@@ -49,6 +61,12 @@ class UserProgramsSerializer(serializers.ModelSerializer):
         """Create an user program
         """
         return models.UserPrograms.objects.create(**validated_data)
+
+    def validate(self, data):
+        if (not 'alert_type_default' in data or not data['alert_type_default']) and\
+           ('sms_enabled' in data and data['sms_enabled']) and not data['user'].phone:
+            raise serializers.ValidationError({'detail': 'Cannot enable sms alert for an user without a phone number registered'})
+        return data
 
     def update(self, instance, validated_data):
         """Update an user program
