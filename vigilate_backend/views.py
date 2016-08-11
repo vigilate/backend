@@ -70,7 +70,9 @@ class UserViewSet(viewsets.ModelViewSet):
 
         data = {"programs" : UserPrograms.objects.filter(user=pk).count(),
                 "stations" : Station.objects.filter(user=pk).count(),
-                "alerts": Alert.objects.filter(user=pk).count()}
+                "alerts": Alert.objects.filter(user=pk).count(),
+                "new_alerts": Alert.objects.filter(user=pk, view=False).count()
+        }
 
         return HttpResponse(json.dumps(data))
 
