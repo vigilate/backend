@@ -3,8 +3,10 @@ import random
 import string
 import PyArgon2
 from django.db import models
+from django.utils.timezone import now
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils.crypto import get_random_string
+from django.conf import settings
 from phonenumber_field.modelfields import PhoneNumberField
 
 # Create your models here.
@@ -47,6 +49,11 @@ class User(models.Model):
         """Check if the user have permission
         """
         return True
+
+    def is_anonymous(self):
+        """Check if the user is anon
+        """
+        return False
 
     def set_password(self, password):
         """Set the user password
@@ -133,3 +140,23 @@ class Station(models.Model):
 
     def generate_token(self):
         self.token = get_random_token()
+
+class Session(models.Model):
+    """ Session model
+    """
+
+    def get_random_token():
+        return get_random_string(length=50)
+
+    token = models.CharField(max_length=50, default=get_random_token, primary_key=True, unique=True)
+    user = models.ForeignKey('User', null=True, default=None)
+    s_user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, default=None)
+    date = models.DateTimeField(auto_now=True)
+
+    def is_valid(self):
+        delta = now() - self.date
+
+        if delta.days:
+            return False
+        return True
+

@@ -135,3 +135,10 @@ class StationSerializer(serializers.ModelSerializer):
         model = models.Station
         fields = ('id', 'user', 'name')
         
+class SessionSerializer(serializers.ModelSerializer):
+    """Serialisation of session
+    """
+
+    class Meta:
+        model = models.Session
+        fields = ()

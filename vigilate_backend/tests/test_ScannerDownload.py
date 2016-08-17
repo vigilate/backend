@@ -16,9 +16,8 @@ class ScannerDownloadTestCase(APITestCase):
         self.new_user = json.loads(resp.content.decode("utf-8"))
 
     def login(self, email, password):
-        credentials = base64.b64encode(str.encode(email)+
-                                       b":"+str.encode(password)).decode('utf8')
-        self.client.credentials(HTTP_AUTHORIZATION='Basic ' + credentials)
+        session = self.client.post(basic_data.api_routes['sessions'], {'password' : password, 'email' : email}) 
+        self.client.defaults['HTTP_AUTHORIZATION'] = 'token ' + json.loads(session.data)['token'];
 
     def create_station(self, name):
         resp = self.client.post(basic_data.api_routes['stations'],

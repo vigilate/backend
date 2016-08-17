@@ -1,4 +1,5 @@
 import json
+import base64
 
 def get_query(request):
     """Parse a query
@@ -34,7 +35,8 @@ def parse_cpe(cpe):
 
 def avoid_id_falsfication(user, request):
     if request.method in ["POST","PATCH","PUT","DELETE"]:
-        if "user" not in request.data:
+
+        if  "user" not in request.data:
             return True
 
         if user.is_superuser:
@@ -47,3 +49,36 @@ def avoid_id_falsfication(user, request):
         return request.data['user'] == user.id
 
     return True
+
+def get_token(request):
+    authheader = request.META.get('HTTP_AUTHORIZATION', '')
+    if not authheader:
+        return None
+
+    try:
+        method, token = authheader.split()
+        if method != "token":
+            return None
+    except Exception:
+        return None
+
+    return token
+
+def get_scanner_cred(request):
+    authheader = request.META.get('HTTP_AUTHORIZATION', '')
+    email = None
+    token = None
+    
+    if not authheader:
+        return (None, None)
+    
+    try:
+        method, creds = authheader.split()
+
+        if method != "Basic":
+            return (None, None)
+        (email, token) = base64.b64decode(creds).decode("utf8").split(':')
+    except Exception as e:
+        (None, None)
+
+    return (email, token)

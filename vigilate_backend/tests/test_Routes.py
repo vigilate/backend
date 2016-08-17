@@ -15,12 +15,12 @@ class RoutesTestCase(APITestCase):
                                             'password': basic_data.user['password']}),
                                 content_type='application/json')
         self.new_client = json.loads(resp.content.decode("utf-8"))
-        
-        self.credentials = base64.b64encode(str.encode(basic_data.user['email'])+
-                                            b":"+str.encode(basic_data.user['password'])).decode('utf8')
 
+        session = self.client.post(basic_data.api_routes['sessions'], {'password':basic_data.user['password'], 'email':basic_data.user['email']})
+        self.credentials = json.loads(session.data)['token']
+        
     def login(self):
-        self.client.credentials(HTTP_AUTHORIZATION='Basic ' + self.credentials)
+        self.client.credentials(HTTP_AUTHORIZATION='token ' + self.credentials)
 
     def test_can_access_api_logged(self):
         self.login()
