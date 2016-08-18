@@ -90,12 +90,11 @@ class UserProgramsSerializer(serializers.ModelSerializer):
 class AlertSerializer(serializers.ModelSerializer):
     """Serialisation of user alerts
     """
-    
-    # program = UserProgramsSerializer()
+
 
     class Meta:
         model = models.Alert
-        fields = ('id', 'user', 'program', 'number_cve', 'max_cvss', 'program_info', 'view')
+        fields = ('id', 'user', 'program', 'number_cve', 'max_cvss', 'program_info', 'view', 'state')
 
     def create(self, validated_data):
         """Create an alert
