@@ -8,6 +8,7 @@ from django.contrib.auth.models import User as UserDjango
 from django.views.decorators.csrf import csrf_exempt
 from django.core.mail import send_mail
 from django.core.exceptions import ObjectDoesNotExist
+from bulk_update.helper import bulk_update
 from rest_framework import viewsets, status
 from rest_framework.decorators import list_route, permission_classes, detail_route
 from rest_framework.response import Response
@@ -245,6 +246,32 @@ class AlertViewSet(viewsets.ModelViewSet):
             return HttpResponse(status=404)            
         alert.view = False
         alert.save()
+        return Response(status=status.HTTP_200_OK)
+
+    #@detail_route(methods=['get'], url_path='mark_all_read')
+    @list_route()
+    def mark_all_read(self, request, pk=None):
+        try:
+            alerts = Alert.objects.filter(user=request.user)
+        except Alert.DoesNotExist:
+            return HttpResponse(status=404)
+
+        for alert in alerts:
+            alert.view = True
+        bulk_update(alerts, update_fields=['view'])
+        return Response(status=status.HTTP_200_OK)
+
+    #@detail_route(methods=['get'], url_path='mark_all_unread')
+    @list_route()
+    def mark_all_unread(self, request, pk=None):
+        try:
+            alerts = Alert.objects.filter(user=request.user)
+        except Alert.DoesNotExist:
+            return HttpResponse(status=404)
+
+        for alert in alerts:
+            alert.view = False
+        bulk_update(alerts, update_fields=['view'])
         return Response(status=status.HTTP_200_OK)
 
         
