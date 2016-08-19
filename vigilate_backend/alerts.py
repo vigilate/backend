@@ -11,12 +11,13 @@ def create_alert(prog, cve, user):
     alert,_ = models.Alert.objects.get_or_create(user=user, program=prog)
     if not alert.cve.filter(cveid=cve.cveid).exists():
         alert.cve.add(cve.cveid)
-    if prog.alert_type_default and user.default_alert_type == models.User.EMAIL or not prog.alert_type_default and prog.email_score <= cve.cvss_score:
-        vigilateMiddleware.vigilate_middleware_queue("EMAIL", {"prog": prog, "user": user})
 
-    if prog.alert_type_default and user.default_alert_type == models.User.SMS or not prog.alert_type_default and prog.sms_score <= cve.cvss_score:
+    if (prog.alert_type_default and user.default_alert_type == models.User.EMAIL) or (not prog.alert_type_default and prog.email_enabled and prog.email_score <= cve.cvss_score):
+        vigilateMiddleware.vigilate_middleware_queue(models.User.EMAIL, {"prog": prog, "user": user})
+
+    if (prog.alert_type_default and user.default_alert_type == models.User.SMS) or (not prog.alert_type_default and prog.sms_enabled and prog.sms_score <= cve.cvss_score):
         if not TESTING:
-            vigilateMiddleware.vigilate_middleware_queue("SMS", {"prog": prog})
+            vigilateMiddleware.vigilate_middleware_queue(models.User.SMS, {"prog": prog, "user": user})
 
 def check_prog(prog, user):
     cves = models_vuln.Cve.objects.filter(cpe=prog.cpe)
