@@ -16,5 +16,5 @@ class Sms(object):
     def send_sms(self, phone, message):
         return self.send_sms_api('prune.budowski@epitech.eu',
                           'b3dda711239f3e29298d229235821a434002c50d',
-                          phone, 'test', message)
+                          phone, message)
 

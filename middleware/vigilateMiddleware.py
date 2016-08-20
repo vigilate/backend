@@ -1,5 +1,6 @@
 from django.core import mail
 from vigilate_backend.models import User
+from vigilate_backend.sms import Sms 
 import threading
 import pprint
 thread_locals = threading.local()
@@ -51,6 +52,7 @@ class VigilateMiddleware(object):
                                [mail_dest], fail_silently=True)
             except ConnectionRefusedError as e:
                 print ("MAIL ERROR : ", e)
+
         sms_content = ""
         sms_dest = ""
         if len(thread_locals.queue[User.SMS]) == 1:
