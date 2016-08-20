@@ -132,7 +132,8 @@ class UserProgramsViewSet(viewsets.ModelViewSet):
             if not all(x in query for x in ['program_version', 'program_name', 'minimum_score']):
                 return Response(status=status.HTTP_400_BAD_REQUEST)
 
-            if 'sms_enabled' in query and query['sms_enabled'] and not request.user.phone:
+            if (not 'alert_type_default' in query or not query['alert_type_default']) and\
+               'sms_enabled' in query and query['sms_enabled'] and not request.user.phone:
                 return Response({'detail' : 'Cannot enable sms alert  for an user without a phone number registered'}, status=status.HTTP_400_BAD_REQUEST)
 
             only_one_program = True
