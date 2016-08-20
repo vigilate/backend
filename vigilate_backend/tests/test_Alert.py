@@ -20,8 +20,12 @@ class AlertTestCase(APITestCase):
                                 content_type='application/json')
         self.new_user = json.loads(resp.content.decode("utf-8"))
 
-        session = self.client.post(basic_data.api_routes['sessions'], {'password' : basic_data.user['password'], 'email' : basic_data.user['email']})
-        self.client.defaults['HTTP_AUTHORIZATION'] = 'token ' + json.loads(session.data)['token'];
+        session = self.client.post(basic_data.api_routes['sessions'],
+                                   json.dumps({'password' : basic_data.user['password'],
+                                               'email' : basic_data.user['email']}),
+                                   content_type='application/json')
+
+        self.client.defaults['HTTP_AUTHORIZATION'] = 'token ' + session.data['token'];
 
         data = test_Alert_data.scanner
         data["user"] = self.new_user["id"]

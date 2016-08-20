@@ -16,8 +16,11 @@ class RoutesTestCase(APITestCase):
                                 content_type='application/json')
         self.new_client = json.loads(resp.content.decode("utf-8"))
 
-        session = self.client.post(basic_data.api_routes['sessions'], {'password':basic_data.user['password'], 'email':basic_data.user['email']})
-        self.credentials = json.loads(session.data)['token']
+        session = self.client.post(basic_data.api_routes['sessions'],
+                                   json.dumps({'password':basic_data.user['password'],
+                                               'email':basic_data.user['email']}),
+                                   content_type='application/json')
+        self.credentials = session.data['token']
         
     def login(self):
         self.client.credentials(HTTP_AUTHORIZATION='token ' + self.credentials)

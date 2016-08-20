@@ -19,8 +19,10 @@ class ScannerTokenTestCase(APITestCase):
 
 
     def login_user(self, email, password):
-        session = self.client.post(basic_data.api_routes['sessions'], {'password' : password, 'email' : email})
-        self.client.defaults['HTTP_AUTHORIZATION'] = 'token ' + json.loads(session.data)['token'];
+        session = self.client.post(basic_data.api_routes['sessions'],
+                                   json.dumps({'password' : password, 'email' : email}),
+                                   content_type='application/json')
+        self.client.defaults['HTTP_AUTHORIZATION'] = 'token ' + session.data['token'];
 
     def login_scanner(self, email, token):
         credentials = base64.b64encode(str.encode(email)+

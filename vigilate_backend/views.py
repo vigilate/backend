@@ -20,6 +20,8 @@ from vigilate_backend.serializers import UserSerializer, UserProgramsSerializer,
 from vigilate_backend import alerts
 from vulnerability_manager import cpe_updater
 from vigilate_backend.VigilateAuthentication import VigilateAuthentication, ScannerAuthentication
+from datetime import timedelta
+from django.utils import timezone
 
 def home(request):
     """Vigilate root url content
@@ -258,16 +260,17 @@ class StationViewSet(viewsets.ModelViewSet):
         else:
             return Station.objects.filter(user=self.request.user.id)
 
-class SessionViewSet(viewsets.ModelViewSet):
+class SessionViewSet(viewsets.mixins.CreateModelMixin,
+                     viewsets.mixins.DestroyModelMixin,
+                     viewsets.mixins.ListModelMixin,
+                     viewsets.GenericViewSet):
     """View for session
     """
     serializer_class = SessionSerializer
-    http_method_names = ['get', 'post', 'delete']
     
     def get_permissions(self):
         """Allow non-authenticated user to create an account
         """
-
         if (self.request.method in ['POST', 'GET'] and self.request.path == "/api/v1/sessions/"):
             return (AllowAny(),)
         return [perm() for perm in self.permission_classes]
@@ -281,20 +284,21 @@ class SessionViewSet(viewsets.ModelViewSet):
             return Session.objects.filter(user=self.request.user.id)
 
     def create(self, request):
-        if not 'password' in request.POST or not 'email' in request.POST:
+        data = get_query(request)
+        if not 'password' in data or not 'email' in data:
             return Response(status=status.HTTP_403_FORBIDDEN)
 
         try:
-            user = User.objects.get(email=request.POST['email'])
+            user = User.objects.get(email=data['email'])
         except User.DoesNotExist:
             try:
-                user = UserDjango.objects.get(username=request.POST['email'])
+                user = UserDjango.objects.get(username=data['email'])
                 if not user.is_superuser:
                     return Response(status=status.HTTP_403_FORBIDDEN)
             except UserDjango.DoesNotExist:
                 return Response(status=status.HTTP_403_FORBIDDEN)
 
-        if not user.check_password(request.POST['password']):
+        if not user.check_password(data['password']):
             return Response(status=status.HTTP_403_FORBIDDEN)
         
         session = Session()
@@ -304,7 +308,9 @@ class SessionViewSet(viewsets.ModelViewSet):
             session.user = user
         session.save()
 
-        return Response('{"token":"%s"}' % session.token, status=status.HTTP_200_OK)
+        to_delete = Session.objects.filter(date__lt=timezone.now() - timedelta(days=1)).delete()
+
+        return Response({"token": session.token}, status=status.HTTP_200_OK)
 
     def destroy(self, request, pk=None):
         Session.objects.get(token=get_token(request)).delete()
