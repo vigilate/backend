@@ -14,9 +14,11 @@ class UserTestCase(APITestCase):
         self.client = APIClient()
 
     def login(self, email, password):
-        session = self.client.post(basic_data.api_routes['sessions'], {'password' : password, 'email' : email})
+        session = self.client.post(basic_data.api_routes['sessions'],
+                                   json.dumps({'password' : password, 'email' : email}),
+                                   content_type='application/json')
         if session.status_code == 200:
-            self.client.defaults['HTTP_AUTHORIZATION'] = 'token ' + json.loads(session.data)['token'];
+            self.client.defaults['HTTP_AUTHORIZATION'] = 'token ' + session.data['token'];
 
     def resetLogin(self):
         self.client.credentials()
