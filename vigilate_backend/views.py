@@ -7,18 +7,21 @@ from django.db.models import Q
 from django.contrib.auth.models import User as UserDjango
 from django.views.decorators.csrf import csrf_exempt
 from django.core.mail import send_mail
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import viewsets, status
 from rest_framework.decorators import list_route, permission_classes, detail_route
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.exceptions import AuthenticationFailed
 from pkg_resources import parse_version
-from vigilate_backend.utils import get_query, parse_cpe
-from vigilate_backend.models import User, UserPrograms, Alert, Station
-from vigilate_backend.serializers import UserSerializer, UserProgramsSerializer, AlertSerializer, AlertSerializerDetail, StationSerializer
+from vigilate_backend.utils import get_query, parse_cpe, get_token, get_scanner_cred
+from vigilate_backend.models import User, UserPrograms, Alert, Station, Session
+from vigilate_backend.serializers import UserSerializer, UserProgramsSerializer, AlertSerializer, AlertSerializerDetail, StationSerializer, SessionSerializer
 from vigilate_backend import alerts
 from vulnerability_manager import cpe_updater
-from vigilate_backend.VigilateAuthentication import VigilateAuthentication
+from vigilate_backend.VigilateAuthentication import VigilateAuthentication, ScannerAuthentication
+from datetime import timedelta
+from django.utils import timezone
 
 def home(request):
     """Vigilate root url content
@@ -90,10 +93,26 @@ class UserProgramsViewSet(viewsets.ModelViewSet):
             return UserPrograms.objects.all()
         else:
             return UserPrograms.objects.filter(user=self.request.user.id)
+        
+    def get_permissions(self):
+        """Allow non-authenticated user to create an account
+        """
+        
+        if self.request.method == 'POST' and self.request.path == "/api/v1/uprog/" and\
+           ScannerAuthentication(self.request):
+            return (AllowAny(),)
+        return [perm() for perm in self.permission_classes]
 
     def create(self, request):
         """Create one or multiple program at once
         """
+
+        # if the request is from the scanner we have to get
+        # the user again here
+        
+        if request.user.is_anonymous():
+            (email, _) = get_scanner_cred(request)
+            request.user = User.objects.get(email=email)
 
         result = set()
         query = get_query(request)
@@ -240,6 +259,72 @@ class StationViewSet(viewsets.ModelViewSet):
             return Station.objects.all()
         else:
             return Station.objects.filter(user=self.request.user.id)
+
+class SessionViewSet(viewsets.mixins.CreateModelMixin,
+                     viewsets.mixins.DestroyModelMixin,
+                     viewsets.mixins.ListModelMixin,
+                     viewsets.GenericViewSet):
+    """View for session
+    """
+    serializer_class = SessionSerializer
+    
+    def get_permissions(self):
+        """Allow non-authenticated user to create an account
+        """
+        if (self.request.method in ['POST', 'GET'] and self.request.path == "/api/v1/sessions/"):
+            return (AllowAny(),)
+        return [perm() for perm in self.permission_classes]
+
+    def get_queryset(self):
+        """Get the queryset depending on the user permission
+        """
+        if self.request.user.is_superuser:
+            return Session.objects.all()
+        else:
+            return Session.objects.filter(user=self.request.user.id)
+
+    def create(self, request):
+        data = get_query(request)
+        if not 'password' in data or not 'email' in data:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        try:
+            user = User.objects.get(email=data['email'])
+        except User.DoesNotExist:
+            try:
+                user = UserDjango.objects.get(username=data['email'])
+                if not user.is_superuser:
+                    return Response(status=status.HTTP_403_FORBIDDEN)
+            except UserDjango.DoesNotExist:
+                return Response(status=status.HTTP_403_FORBIDDEN)
+
+        if not user.check_password(data['password']):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        
+        session = Session()
+        if user.is_superuser:
+            session.s_user = user
+        else:
+            session.user = user
+        session.save()
+
+        to_delete = Session.objects.filter(date__lt=timezone.now() - timedelta(days=1)).delete()
+
+        return Response({"token": session.token}, status=status.HTTP_200_OK)
+
+    def destroy(self, request, pk=None):
+        Session.objects.get(token=get_token(request)).delete()
+        return Response(status=status.HTTP_200_OK)
+
+    def list(self, request):
+        try:
+            session = Session.objects.get(token=get_token(request))
+        except  ObjectDoesNotExist:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        if session.is_valid:
+            return Response(status=status.HTTP_200_OK)
+        session.delete()
+        return Response(status=status.HTTP_403_FORBIDDEN)
 
 @csrf_exempt
 def get_scanner(request, station_id):

@@ -16,12 +16,14 @@ install:
 before_script:
   - psql -c 'CREATE DATABASE Vigilate;' -U postgres
   - echo "USE mysql;\nUPDATE user SET password=PASSWORD('toor') WHERE user='root';\nFLUSH PRIVILEGES;\n" | mysql -u root
-  - mysql -e 'create database Vigilate;'
+  - mysql -e 'create database vigilate;'
   - mkdir -p $HOME/lib/
   - INSTALL_DIR=$HOME/lib/ ./install-pyargon2.sh nosudo
   - git submodule init
   - git submodule update
 script:
+  - python3 manage.py makemigrations vigilate_backend
+  - python3 manage.py makemigrations vulnerability_manager
   - python3 manage.py test vigilate_backend/
 
 after_success:

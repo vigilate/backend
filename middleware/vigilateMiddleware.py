@@ -55,8 +55,8 @@ class VigilateMiddleware(object):
         sms_dest = ""
         if len(thread_locals.queue[User.SMS]) == 1:
             q = thread_locals.queue[User.SMS][0]
-            sms_content = "Vigilate: Alert on program %s version %s" % (prog.program_name,
-                                                                           prog.program_version)
+            sms_content = "Vigilate: Alert on program %s version %s" % (q['prog'].program_name,
+                                                                           q['prog'].program_version)
             sms_dest = q["user"].phone
         elif len(thread_locals.queue[User.SMS]) > 1:
             q = thread_locals.queue[User.SMS][0]

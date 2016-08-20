@@ -14,7 +14,6 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 import os
 import sys
 
-
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TESTING = len(sys.argv) > 1 and sys.argv[1] == 'test'
 
@@ -129,7 +128,7 @@ TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
 NOSE_ARGS = [
     '--with-coverage',
-    '--cover-package=vigilate_backend'
+    '--cover-package=vigilate_backend',
 ]
 
 

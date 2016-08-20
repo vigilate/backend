@@ -16,10 +16,12 @@ class UserProgramsTestCase(APITestCase):
                                             'password': basic_data.user['password']}),
                                 content_type='application/json')
         self.new_user = json.loads(resp.content.decode("utf-8"))
-        
-        credentials = base64.b64encode(str.encode(basic_data.user['email'])+
-                                       b":"+str.encode(basic_data.user['password']))
-        self.client.defaults['HTTP_AUTHORIZATION'] = 'Basic ' + str(credentials.decode("utf-8"))
+
+        session = self.client.post(basic_data.api_routes['sessions'],
+                                   json.dumps({'password' : basic_data.user['password'],
+                                               'email' : basic_data.user['email']}),
+                                   content_type='application/json')
+        self.client.defaults['HTTP_AUTHORIZATION'] = 'token ' + session.data['token'];
 
         data = test_UserPrograms_data.scanner
         data["user"] = self.new_user["id"]

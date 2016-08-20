@@ -18,11 +18,17 @@ class ScannerTokenTestCase(APITestCase):
         self.new_user = json.loads(resp.content.decode("utf-8"))
 
 
-    def login(self, email, password):
-        credentials = base64.b64encode(str.encode(email)+
-                                       b":"+str.encode(password)).decode('utf8')
-        self.client.credentials(HTTP_AUTHORIZATION='Basic ' + credentials)
+    def login_user(self, email, password):
+        session = self.client.post(basic_data.api_routes['sessions'],
+                                   json.dumps({'password' : password, 'email' : email}),
+                                   content_type='application/json')
+        self.client.defaults['HTTP_AUTHORIZATION'] = 'token ' + session.data['token'];
 
+    def login_scanner(self, email, token):
+        credentials = base64.b64encode(str.encode(email)+
+                                       b":"+str.encode(token)).decode("utf8")
+        self.client.credentials(HTTP_AUTHORIZATION='Basic ' + credentials)
+        
     def create_station(self, name):
         resp = self.client.post(basic_data.api_routes['stations'],
                                 json.dumps({"user": self.new_user["id"], "name": name}),
@@ -30,11 +36,11 @@ class ScannerTokenTestCase(APITestCase):
         return json.loads(resp.content.decode("utf-8"))
         
     def test_can_connect_with_good_token(self):
-        self.login(basic_data.user['email'], basic_data.user['password'])
+        self.login_user(basic_data.user['email'], basic_data.user['password'])
 
         station = self.create_station(test_ScannerToken_data.scanner["name"])
         print(station)
-        self.login(basic_data.user['email'], models.Station.objects.get(id=station["id"]).token)
+        self.login_scanner(basic_data.user['email'], models.Station.objects.get(id=station["id"]).token)
         test_ScannerToken_data.prog_list_to_submit["poste"] = station["id"]
         resp = self.client.post(basic_data.api_routes['programs'],
                                 json.dumps(test_ScannerToken_data.prog_list_to_submit),
@@ -44,11 +50,11 @@ class ScannerTokenTestCase(APITestCase):
         self.assertEqual(resp.status_code, 200)
 
     def test_cannot_connect_with_bad_token(self):
-        self.login(basic_data.user['email'], basic_data.user['password'])
+        self.login_user(basic_data.user['email'], basic_data.user['password'])
 
         station = self.create_station(test_ScannerToken_data.scanner["name"])
         print(station)
-        self.login(basic_data.user['email'], test_ScannerToken_data.bad_token)
+        self.login_scanner(basic_data.user['email'], test_ScannerToken_data.bad_token)
         test_ScannerToken_data.prog_list_to_submit["poste"] = station["id"]
         resp = self.client.post(basic_data.api_routes['programs'],
                                 json.dumps(test_ScannerToken_data.prog_list_to_submit),
@@ -59,12 +65,12 @@ class ScannerTokenTestCase(APITestCase):
 
 
     def test_cannot_connect_with_bad_id(self):
-        self.login(basic_data.user['email'], basic_data.user['password'])
+        self.login_user(basic_data.user['email'], basic_data.user['password'])
 
         station_bad = self.create_station(test_ScannerToken_data.scanner["name"])
         station = self.create_station(test_ScannerToken_data.scanner["name"])
         print(station)
-        self.login(basic_data.user['email'], models.Station.objects.get(id=station["id"]).token)
+        self.login_scanner(basic_data.user['email'], models.Station.objects.get(id=station["id"]).token)
         test_ScannerToken_data.prog_list_to_submit["poste"] = station_bad["id"]
         resp = self.client.post(basic_data.api_routes['programs'],
                                 json.dumps(test_ScannerToken_data.prog_list_to_submit),

@@ -14,9 +14,11 @@ class UserTestCase(APITestCase):
         self.client = APIClient()
 
     def login(self, email, password):
-        credentials = base64.b64encode(str.encode(email)+
-                                       b":"+str.encode(password)).decode('utf8')
-        self.client.credentials(HTTP_AUTHORIZATION='Basic ' + credentials)
+        session = self.client.post(basic_data.api_routes['sessions'],
+                                   json.dumps({'password' : password, 'email' : email}),
+                                   content_type='application/json')
+        if session.status_code == 200:
+            self.client.defaults['HTTP_AUTHORIZATION'] = 'token ' + session.data['token'];
 
     def resetLogin(self):
         self.client.credentials()
@@ -146,6 +148,7 @@ class UserTestCase(APITestCase):
         resp = self.client.get(basic_data.api_routes['users'])
         self.assertEqual(resp.status_code, 200)
         data = json.loads(resp.content.decode("utf8"))
+        print(data)
         self.assertEqual(len(data), len(test_User_data.multiple_user))
 
     def test_receive_mail_when_user_created(self):
