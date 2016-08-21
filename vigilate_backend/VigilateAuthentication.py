@@ -38,8 +38,6 @@ class VigilateAuthentication(authentication.BasicAuthentication):
         #update data
         session.save()
         user = session.user
-        if not user:
-            user = session.s_user
         
         return self.security_check_then_return(user, request)
 

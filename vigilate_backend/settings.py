@@ -28,6 +28,10 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# Custom user
+
+AUTH_USER_MODEL = 'vigilate_backend.User'
+
 # Application definition
 
 INSTALLED_APPS = (

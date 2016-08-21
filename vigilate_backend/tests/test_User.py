@@ -1,11 +1,10 @@
 import sys
 import json
 import base64
-from django.contrib.auth.models import User
 from django.core import mail
 from rest_framework.test import APITestCase, APIClient
 from vigilate_backend import models
-
+from vigilate_backend.models import User
 from vigilate_backend.tests import basic_data
 from vigilate_backend.tests import test_User_data
 
@@ -119,14 +118,12 @@ class UserTestCase(APITestCase):
 
     def test_cannot_connect_with_wrong_superuser_password(self):
         User.objects.create_superuser(**test_User_data.superuser)
-        
-        self.login(test_User_data.superuser["username"], test_User_data.wrong_password_superuser)
+
+        self.login(test_User_data.superuser["email"], test_User_data.wrong_password_superuser)
         resp = self.client.get(basic_data.api_routes['users'])
         self.assertEqual(resp.status_code, 401)
 
-            
-
-    def test_only_superuser_can_see_other_user(self):
+    def test_superuser_can_see_only_him(self):
         for user_to_create in test_User_data.multiple_user:
             resp = self.client.post(basic_data.api_routes['users'],
                                     json.dumps({'email': user_to_create['email'],
@@ -144,12 +141,12 @@ class UserTestCase(APITestCase):
             self.assertEqual(len(data), 1)
 
         User.objects.create_superuser(**test_User_data.superuser)
-        self.login(test_User_data.superuser["username"], test_User_data.superuser["password"])
+        self.login(test_User_data.superuser["email"], test_User_data.superuser["password"])
         resp = self.client.get(basic_data.api_routes['users'])
         self.assertEqual(resp.status_code, 200)
         data = json.loads(resp.content.decode("utf8"))
         print(data)
-        self.assertEqual(len(data), len(test_User_data.multiple_user))
+        self.assertEqual(len(data), 1)
 
     def test_receive_mail_when_user_created(self):
 
