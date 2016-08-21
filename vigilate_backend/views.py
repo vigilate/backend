@@ -357,6 +357,9 @@ class SessionViewSet(viewsets.mixins.CreateModelMixin,
 @csrf_exempt
 def get_scanner(request, station_id):
 
+    if request.method == "OPTIONS":
+        return HttpResponse()
+
     ret = '{"detail":"%s"}'
     auth = VigilateAuthentication()
 
