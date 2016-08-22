@@ -3,25 +3,58 @@ import random
 import string
 import PyArgon2
 from django.db import models
+from django.db.models.signals import class_prepared
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.utils.timezone import now
-from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator, MaxLengthValidator
 from django.utils.crypto import get_random_string
 from django.conf import settings
 from phonenumber_field.modelfields import PhoneNumberField
 
 # Create your models here.
 
-class User(models.Model):
+def longer_password(sender, *args, **kwargs):
+    if (sender.__name__ == "User" and
+        sender.__module__ == "vigilate_backend.models"):
+        patch_password(sender)
+class_prepared.connect(longer_password)
+
+def patch_password(model):
+    #expand size of password defined in AbstractBaseUser
+    password = model._meta.get_field('password')
+    password.max_length = 200
+    for v in password.validators:
+        if isinstance(v, MaxLengthValidator):
+            v.limit_value = 200
+
+class UserManager(BaseUserManager):
+
+    def create_user(self, email, password):
+        email = self.normalize_email(email)
+        user = self.model(email=email)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, email, password):
+        user = self.create_user(email, password)
+        user.is_superuser = True
+        user.save()
+        return user
+
+class User(AbstractBaseUser):
     """User model
     """
-    
+
     id = models.AutoField(primary_key=True, unique=True)
     email = models.EmailField(max_length=50, unique=True)
-    password = models.TextField(null=False)
-    phone = PhoneNumberField(null=True)
+    phone = PhoneNumberField(null=True, blank=True)
     user_type = models.IntegerField(null=False, default=0)
     contrat = models.IntegerField(null=False, default=0)
     id_dealer = models.IntegerField(default=0)
+
+    is_superuser = models.BooleanField(default=False)
+    is_active = True
 
     EMAIL = "EMAIL"
     SMS = "SMS"
@@ -38,10 +71,17 @@ class User(models.Model):
                                           choices=ALERT_TYPE,
                                           default=EMAIL)
 
-    is_superuser = False
+    # setup to be able to our User as default django user
+    REQUIRED_FIELDS = []
+    USERNAME_FIELD = 'email'
+    objects = UserManager()
 
-    def is_authenticated(self):
-        """Check if the user is authenticated
+    @property
+    def is_staff(self):
+       return self.is_superuser
+
+    def has_perm(self, perm, obj=None):
+        """Check if the user have permission
         """
         return True
 
@@ -50,16 +90,15 @@ class User(models.Model):
         """
         return True
 
-    def is_anonymous(self):
-        """Check if the user is anon
+    def has_module_perms(self, perm, obj=None):
+        """Check if the user have permission
         """
-        return False
+        return True
 
     def set_password(self, password):
         """Set the user password
         """
         charset = string.digits + string.ascii_letters
-
         salt = ''.join([random.choice(charset) for _ in range(10)])
         hsh = PyArgon2.Hash_pwd(password.encode(), salt.encode())
         hsh = (salt.encode()+b"$"+binascii.hexlify(hsh)).decode("utf8")
@@ -72,6 +111,12 @@ class User(models.Model):
         ret = PyArgon2.Check_pwd(pwd.encode(), salt.encode(), binascii.unhexlify(hsh))
         return ret
 
+    def get_short_name(self):
+        return self.email
+
+    def get_full_name(self):
+        return get_short_name
+
     def is_valid_scanner_token(self, id_scanner, token):
         """Check if id_scanner is a scanner of user and that the token match
         """
@@ -80,7 +125,7 @@ class User(models.Model):
             return False
         return True
 
-
+patch_password(User)
 
 class UserPrograms(models.Model):
     """User programs model
@@ -163,7 +208,6 @@ class Session(models.Model):
 
     token = models.CharField(max_length=50, default=get_random_token, primary_key=True, unique=True)
     user = models.ForeignKey('User', null=True, default=None)
-    s_user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, default=None)
     date = models.DateTimeField(auto_now=True)
 
     def is_valid(self):

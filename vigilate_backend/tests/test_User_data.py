@@ -6,7 +6,7 @@ multiple_user = [
     {"email": "ccc@ddd.fr", "password": "d"},
 ]
 
-superuser = {"username": "vigilate", "password": "vigilate_pwd", "email": "vigilate@test.com"}
+superuser = {"password": "vigilate_pwd", "email": "vigilate@test.com"}
 
 wrong_password_superuser = "wrong"
 

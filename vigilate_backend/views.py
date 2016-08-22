@@ -4,7 +4,6 @@ from django.http import HttpResponse
 from vigilate_backend.settings import TESTING, BASE_DIR
 from django.db import IntegrityError
 from django.db.models import Q
-from django.contrib.auth.models import User as UserDjango
 from django.views.decorators.csrf import csrf_exempt
 from django.core.mail import send_mail
 from django.core.exceptions import ObjectDoesNotExist
@@ -46,10 +45,7 @@ class UserViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """Get the queryset depending on the user permission
         """
-        if self.request.user.is_superuser:
-            return User.objects.all()
-        else:
-            return User.objects.filter(id=self.request.user.id)
+        return User.objects.filter(id=self.request.user.id)
 
     def perform_create(self, serializer):
         new_user = serializer.save()
@@ -69,7 +65,7 @@ class UserViewSet(viewsets.ModelViewSet):
         ret = '{"detail":"%s"}'
 
         pk = int(pk)
-        if not request.user.is_superuser and request.user.id != pk:
+        if request.user.id != pk:
             return HttpResponse(ret % "Forbidden",status=403)
 
         data = {"programs" : UserPrograms.objects.filter(user=pk).count(),
@@ -90,10 +86,7 @@ class UserProgramsViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """Get the queryset depending on the user permission
         """
-        if self.request.user.is_superuser:
-            return UserPrograms.objects.all()
-        else:
-            return UserPrograms.objects.filter(user=self.request.user.id)
+        return UserPrograms.objects.filter(user=self.request.user.id)
         
     def get_permissions(self):
         """Allow non-authenticated user to create an account
@@ -223,10 +216,7 @@ class AlertViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """Get the queryset depending on the user permission
         """
-        if self.request.user.is_superuser:
-            return Alert.objects.all()
-        else:
-            return Alert.objects.filter(user=self.request.user.id)
+        return Alert.objects.filter(user=self.request.user.id)
 
     @detail_route(methods=['get'], url_path='mark_read')
     def mark_read(self, request, pk=None):
@@ -283,10 +273,7 @@ class StationViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """Get the queryset depending on the user permission
         """
-        if self.request.user.is_superuser:
-            return Station.objects.all()
-        else:
-            return Station.objects.filter(user=self.request.user.id)
+        return Station.objects.filter(user=self.request.user.id)
 
 class SessionViewSet(viewsets.mixins.CreateModelMixin,
                      viewsets.mixins.DestroyModelMixin,
@@ -306,34 +293,23 @@ class SessionViewSet(viewsets.mixins.CreateModelMixin,
     def get_queryset(self):
         """Get the queryset depending on the user permission
         """
-        if self.request.user.is_superuser:
-            return Session.objects.all()
-        else:
-            return Session.objects.filter(user=self.request.user.id)
+        return Session.objects.filter(user=self.request.user.id)
 
     def create(self, request):
         data = get_query(request)
-        if not 'password' in data or not 'email' in data:
+        if not data or not 'password' in data or not 'email' in data:
             return Response(status=status.HTTP_403_FORBIDDEN)
 
         try:
             user = User.objects.get(email=data['email'])
         except User.DoesNotExist:
-            try:
-                user = UserDjango.objects.get(username=data['email'])
-                if not user.is_superuser:
-                    return Response(status=status.HTTP_403_FORBIDDEN)
-            except UserDjango.DoesNotExist:
-                return Response(status=status.HTTP_403_FORBIDDEN)
+            return Response(status=status.HTTP_403_FORBIDDEN)
 
         if not user.check_password(data['password']):
             return Response(status=status.HTTP_403_FORBIDDEN)
         
         session = Session()
-        if user.is_superuser:
-            session.s_user = user
-        else:
-            session.user = user
+        session.user = user
         session.save()
 
         to_delete = Session.objects.filter(date__lt=timezone.now() - timedelta(days=1)).delete()
