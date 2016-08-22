@@ -1,6 +1,7 @@
 user = {
     "email" : "test@test.com",
     "password" : "test",
+    "phone": "+441234567890"
 }
 
 api_routes = {
