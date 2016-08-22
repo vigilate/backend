@@ -3,6 +3,7 @@ from vigilate_backend.models import User
 from vigilate_backend.sms import Sms 
 import threading
 import pprint
+from vigilate_backend.settings import TESTING
 thread_locals = threading.local()
 
 def vigilate_middleware_queue(queue_type, value):
@@ -58,7 +59,7 @@ class VigilateMiddleware(object):
         if len(thread_locals.queue[User.SMS]) == 1:
             q = thread_locals.queue[User.SMS][0]
             sms_content = "Vigilate: Alert on program %s version %s" % (q['prog'].program_name,
-                                                                           q['prog'].program_version)
+                                                                        q['prog'].program_version)
             sms_dest = q["user"].phone
         elif len(thread_locals.queue[User.SMS]) > 1:
             q = thread_locals.queue[User.SMS][0]
@@ -66,7 +67,7 @@ class VigilateMiddleware(object):
             sms_dest = q["user"].phone
 
         if sms_dest:
-            Sms().send_sms(sms_dest, sms_content)
+            Sms().send_sms(sms_dest, sms_content, TESTING)
         
         self.cleanup()
         return response

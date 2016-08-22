@@ -16,7 +16,9 @@ class AlertTestCase(APITestCase):
 
         resp = self.client.post(basic_data.api_routes['users'],
                                 json.dumps({'email': basic_data.user['email'],
-                                            'password': basic_data.user['password']}),
+                                            'password': basic_data.user['password'],
+                                            'phone': basic_data.user['phone']
+                                }),
                                 content_type='application/json')
         self.new_user = json.loads(resp.content.decode("utf-8"))
 
@@ -35,6 +37,7 @@ class AlertTestCase(APITestCase):
         self.station = json.loads(resp.content.decode("utf-8"))
         for d in [test_Alert_data.prog_not_vuln,
                   test_Alert_data.prog_vuln,
+                  test_Alert_data.prog_vuln_sms,
                   test_Alert_data.prog_vuln2,
                   test_Alert_data.prog_vuln_before_update,
                   test_Alert_data.proglist_vuln,
@@ -79,6 +82,21 @@ class AlertTestCase(APITestCase):
         self.assertEqual(resp.status_code, 200)
 
         self.assertEqual(len(mail.outbox), 1)
+
+    def test_alert_when_prog_vuln_sms(self):
+        mail.outbox = []
+        self.addVuln()
+        resp = self.client.post(basic_data.api_routes['programs'],
+                                json.dumps(test_Alert_data.prog_vuln_sms),
+                                content_type="application/json")
+
+        self.assertEqual(resp.status_code, 200)
+        resp = self.client.get(basic_data.api_routes['alerts'])
+        data = json.loads(resp.content.decode("utf8"))
+        self.assertEqual(len(data), 1)
+
+        resp = self.client.get(basic_data.api_routes['alerts'] + str(data[0]["id"]) + "/")
+        self.assertEqual(resp.status_code, 200)
 
 
 
