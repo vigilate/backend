@@ -165,7 +165,9 @@ class Alert(models.Model):
         return 0
 
     def program_info(self):
-        return {k:getattr(self.program, k) for k in ['program_name', 'program_version']}
+        info = {k:getattr(self.program, k) for k in ['program_name', 'program_version']}
+        info["poste"] = self.program.poste.id
+        return info
 
     def number_cve(self):
         return self.cve.count()
