@@ -176,11 +176,11 @@ class Alert(models.Model):
         states = set()
 
         for cve in self.cve.all():
-            srcs = map(lambda x: x.lower(), cve.reference_set.values_list("source", flat=True))
+            srcs = list(map(lambda x: x.lower(), cve.reference_set.values_list("source", flat=True)))
             if "exploit-db" in  srcs or "milw0rm" in srcs:
                 state.add("exploit")
 
-            types = map(lambda x: x.lower(), cve.reference_set.values_list("type", flat=True))
+            types = list(map(lambda x: x.lower(), cve.reference_set.values_list("type", flat=True)))
             if "patch" in types:
                 states.add("patch")
         return states
