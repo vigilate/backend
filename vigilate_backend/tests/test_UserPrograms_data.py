@@ -6,3 +6,5 @@ prog_list_to_submit = [{"programs_list" :
                        ],
                         "poste" : "changed"}]
 scanner = {"name": "Test station"}
+
+prog_vuln = {"program_name" : "bzip2", "program_version" : "1.0.6", "minimum_score": 1,"poste": 1}

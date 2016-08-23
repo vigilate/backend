@@ -7,6 +7,7 @@ from django.db.models import Q
 from django.views.decorators.csrf import csrf_exempt
 from django.core.mail import send_mail
 from django.core.exceptions import ObjectDoesNotExist
+from django.core import serializers
 from bulk_update.helper import bulk_update
 from rest_framework import viewsets, status
 from rest_framework.decorators import list_route, permission_classes, detail_route
@@ -203,6 +204,20 @@ class UserProgramsViewSet(viewsets.ModelViewSet):
         instance.save(update_fields=["cpe"])
         alerts.check_prog(instance, self.request.user)
 
+    @detail_route(methods=['get'], url_path='get_alerts')
+    def get_alerts(self, request, pk=None):
+        if not pk:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        final_list = []
+        alerts_list = serializers.serialize("json", Alert.objects.filter(program=int(pk)))
+
+        for elem in json.loads(alerts_list):
+            fields = elem['fields']
+            fields["alert_id"] = elem['pk']
+            fields["program_name"] = UserPrograms.objects.filter(id=fields["program"])[0].program_name
+            final_list.append(fields)
+
+        return HttpResponse(json.dumps(final_list), content_type="json")
 
 class AlertViewSet(viewsets.ModelViewSet):
     """View for alerts
@@ -264,7 +279,6 @@ class AlertViewSet(viewsets.ModelViewSet):
         bulk_update(alerts, update_fields=['view'])
         return Response(status=status.HTTP_200_OK)
 
-        
 class StationViewSet(viewsets.ModelViewSet):
     """View for station
     """

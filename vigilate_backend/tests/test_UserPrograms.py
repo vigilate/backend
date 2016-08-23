@@ -5,7 +5,8 @@ from rest_framework.test import APITestCase, APIClient
 from vigilate_backend import models
 
 from vigilate_backend.tests import basic_data
-from vigilate_backend.tests import test_UserPrograms_data
+from vigilate_backend.tests import test_UserPrograms_data, test_Alert_data
+from vulnerability_manager.models import Cve, Cpe
 
 class UserProgramsTestCase(APITestCase):
     def setUp(self):
@@ -34,6 +35,14 @@ class UserProgramsTestCase(APITestCase):
             for elem in d:
                 elem["poste"] = self.station["id"]
 
+    def addVuln(self, check_prog = False):
+        for cpe in test_Alert_data.cpes:
+            Cpe.objects.get_or_create(**cpe)
+        for cve in test_Alert_data.cves:
+            new_cve = Cve.objects.create(**cve)
+            new_cve.cpe.set(test_Alert_data.cve_cpe[cve["cveid"]])
+            if check_prog:
+                alerts.check_cve(new_cve)
 
     def test_submit_one_program(self):
         for prog in test_UserPrograms_data.prog_to_submit:
@@ -77,3 +86,21 @@ class UserProgramsTestCase(APITestCase):
         
             for sent in prog_list['programs_list']:
                 self.assertTrue(sent in database_programs_json)
+
+    #Generate alert(s) and try to get them by the corresponding method
+    def test_get_alerts_from_program(self):
+        self.addVuln()
+        resp = self.client.post(basic_data.api_routes['programs'],
+                                json.dumps(test_UserPrograms_data.prog_vuln),
+                                content_type="application/json")
+        self.assertEqual(resp.status_code, 200)
+        prog = models.UserPrograms.objects.filter(program_name=test_UserPrograms_data.prog_vuln['program_name'])[0]
+
+        resp = self.client.get(
+            basic_data.api_routes['programs']+basic_data.api_routes['get_alerts'] % prog.id)
+        self.assertEqual(resp.status_code, 200)
+
+        data = json.loads(resp.content.decode('utf-8'))
+        for elem in data:
+            alert = models.Alert.objects.filter(id=elem['alert_id'])
+            self.assertEqual(len(alert), 1)

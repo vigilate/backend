@@ -11,5 +11,6 @@ api_routes = {
     "users" : "/api/v1/users/",
     "stations" : "/api/v1/stations/",
     "get_scanner": "/get_scanner/",
-    "sessions": "/api/v1/sessions/"
+    "sessions": "/api/v1/sessions/",
+    "get_alerts": "%d/get_alerts/"
 }
