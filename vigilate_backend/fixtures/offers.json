@@ -1,0 +1,29 @@
+[
+  {
+    "model": "vigilate_backend.Plans",
+    "pk": 1,
+    "fields": {
+      "name": "Basic",
+      "price": 0,
+      "max_stations": 5
+    }
+  },
+  {
+    "model": "vigilate_backend.Plans",
+    "pk": 2,
+    "fields": {
+      "name": "Silver",
+      "price": 19.99,
+      "max_stations": 20
+    }
+  },
+  {
+    "model": "vigilate_backend.Plans",
+    "pk": 3,
+    "fields": {
+      "name": "Gold",
+      "price": 99.99,
+      "max_stations": 0
+    }
+  }
+]
