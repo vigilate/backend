@@ -11,5 +11,8 @@ python3 $path/manage.py makemigrations vulnerability_manager
 python3 $path/manage.py migrate
 python3 $path/manage.py migrate --run-syncdb
 
+echo "Pushing Fixtures..."
+python3 $path/manage.py loaddata offers
+
 echo "Creating the superuser now..."
 python3 $path/manage.py createsuperuser

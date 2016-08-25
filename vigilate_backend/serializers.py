@@ -3,6 +3,7 @@ from vigilate_backend import models
 from rest_framework import status
 from rest_framework.response import Response
 from vulnerability_manager.serializers import CveSerializer
+from vigilate_backend.utils import can_add_station
 
 class UserSerializer(serializers.ModelSerializer):
     """Serialisation of User
@@ -132,7 +133,14 @@ class StationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Station
-        fields = ('id', 'user', 'name')
+        fields = ('id', 'user', 'name', 'disabled')
+
+    def validate(self, data):
+
+        if not can_add_station(models.Station.objects.filter(user=data["user"].id).count(), data["user"]):
+            raise serializers.ValidationError({'name': "You can't add more station with your current plan"})
+        return data
+
         
 class SessionSerializer(serializers.ModelSerializer):
     """Serialisation of session
