@@ -114,21 +114,25 @@ class UserProgramsViewSet(viewsets.ModelViewSet):
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
         if 'poste' not in query:
-            return Response("Missing 'poste' field", status=status.HTTP_400_BAD_REQUEST)
+            return Response({"poste": ["This field is required"]}, status=status.HTTP_400_BAD_REQUEST)
         if not Station.objects.filter(user=request.user, id=int(query['poste'])).exists():
-            return Response("Invalide station id", status=status.HTTP_400_BAD_REQUEST)
+            return Response({"poste": ["This station does not exist"]}, status=status.HTTP_400_BAD_REQUEST)
 
         station = Station.objects.get(id=int(query['poste']))
 
         only_one_program = False
         extra_field = {}
         if not "programs_list" in query:
-            if not all(x in query for x in ['program_version', 'program_name', 'minimum_score']):
-                return Response(status=status.HTTP_400_BAD_REQUEST)
+            err = {}
+            for x in ['program_version', 'program_name', 'minimum_score']:
+                if x not in query:
+                    err[x] = ["This field is required"]
+            if err:
+                return Response(err, status=status.HTTP_400_BAD_REQUEST)
 
             if (not 'alert_type_default' in query or not query['alert_type_default']) and\
                'sms_enabled' in query and query['sms_enabled'] and not request.user.phone:
-                return Response({'detail' : 'Cannot enable sms alert  for an user without a phone number registered'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'sms_enabled' : ['Cannot enable sms alert for an user without a phone number registered']}, status=status.HTTP_400_BAD_REQUEST)
 
             only_one_program = True
             elem = {}
@@ -143,7 +147,7 @@ class UserProgramsViewSet(viewsets.ModelViewSet):
 
             query['programs_list'] = [elem]
             if UserPrograms.objects.filter(user=request.user.id, program_name=elem['program_name'], poste=station).exists():
-                ret = {"detail": "Program %s already exists for station: %s" % (elem['program_name'], station.name)}
+                ret = {"program_name": ["A program with this name already exists for station %s" % (station.name)]}
                 return Response(ret, status=status.HTTP_400_BAD_REQUEST)
 
         for elem in query['programs_list']:
@@ -298,15 +302,15 @@ class SessionViewSet(viewsets.mixins.CreateModelMixin,
     def create(self, request):
         data = get_query(request)
         if not data or not 'password' in data or not 'email' in data:
-            return Response(status=status.HTTP_403_FORBIDDEN)
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
         try:
             user = User.objects.get(email=data['email'])
         except User.DoesNotExist:
-            return Response(status=status.HTTP_403_FORBIDDEN)
+            return Response({"email": ["This email is not registered"]}, status=status.HTTP_403_FORBIDDEN)
 
         if not user.check_password(data['password']):
-            return Response(status=status.HTTP_403_FORBIDDEN)
+            return Response({"password": ["Invalid password"]}, status=status.HTTP_403_FORBIDDEN)
         
         session = Session()
         session.user = user
