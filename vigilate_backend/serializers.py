@@ -123,7 +123,7 @@ class AlertSerializerDetail(serializers.ModelSerializer):
 
     class Meta:
         model = models.Alert
-        fields = ('id', 'user', 'program', 'cve')
+        fields = ('id', 'user', 'program', 'cve', 'view')
 
 
 class StationSerializer(serializers.ModelSerializer):
