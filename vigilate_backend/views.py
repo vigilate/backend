@@ -197,11 +197,17 @@ class UserProgramsViewSet(viewsets.ModelViewSet):
 
 
     def perform_update(self, serializer):
+        orig = UserPrograms.objects.get(id=serializer.instance.id)
+        check = False
+        if orig.program_version != serializer.validated_data['program_version'] or \
+           orig.program_name != serializer.validated_data['program_name']:
+            check = True            
         instance = serializer.save()
         (cpe, _) = cpe_updater.get_cpe_from_name_version(instance.program_name, instance.program_version, True)
         instance.cpe = cpe
         instance.save(update_fields=["cpe"])
-        alerts.check_prog(instance, self.request.user)
+        if check:
+            alerts.check_prog(instance, self.request.user)
 
 
 class AlertViewSet(viewsets.ModelViewSet):
