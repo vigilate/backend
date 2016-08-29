@@ -146,8 +146,8 @@ class UserPrograms(models.Model):
     web_enabled = models.BooleanField(default=True)
     alert_type_default = models.BooleanField(default=True)
 
-    def is_vulnerable(self):
-        return self.alert_set.exists()
+    def alert_id(self):
+        return Alert.objects.filter(program=self.id).values_list('id', flat=True).first()
 
 class Alert(models.Model):
     """Alert model
