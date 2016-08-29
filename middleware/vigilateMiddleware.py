@@ -32,6 +32,7 @@ class VigilateMiddleware(object):
         elif len(thread_locals.queue[User.EMAIL]) > 1:
             prog_list = "\n".join("%s version %s" % (v["prog"].program_name, v["prog"].program_version) for v in thread_locals.queue[User.EMAIL])
             prog_list = prog_list.split('\n')
+            prog_list = list(set(prog_list))
             i = 0
             already_listed = []
             for alert in prog_list:
