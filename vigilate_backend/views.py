@@ -154,7 +154,7 @@ class UserProgramsViewSet(viewsets.ModelViewSet):
             if not all(x in elem for x in ['program_version', 'program_name']):
                 return Response(status=status.HTTP_400_BAD_REQUEST)
         
-        up_to_date = False
+        up_to_date = True
         if TESTING:
             up_to_date = True
 
