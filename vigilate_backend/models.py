@@ -42,6 +42,20 @@ class UserManager(BaseUserManager):
         user.save()
         return user
 
+class Plans(models.Model):
+    """ Plans/Pricing
+    """
+    
+    name = models.CharField(max_length=30, verbose_name="plan type")
+    price = models.FloatField(null=True)
+    max_stations = models.IntegerField(null=False)
+
+    def __str__(self):
+        return self.name
+    
+    class Meta:
+        verbose_name_plural = "Plans"
+    
 class User(AbstractBaseUser):
     """User model
     """
@@ -52,6 +66,7 @@ class User(AbstractBaseUser):
     user_type = models.IntegerField(null=False, default=0)
     contrat = models.IntegerField(null=False, default=0)
     id_dealer = models.IntegerField(default=0)
+    plan = models.ForeignKey(Plans, default=1, on_delete=models.SET_DEFAULT)
 
     is_superuser = models.BooleanField(default=False)
     is_active = True
@@ -125,6 +140,9 @@ class User(AbstractBaseUser):
             return False
         return True
 
+        class Meta:
+            verbose_name_plural = "Users"
+
 patch_password(User)
 
 class UserPrograms(models.Model):
@@ -148,6 +166,9 @@ class UserPrograms(models.Model):
 
     def is_vulnerable(self):
         return self.alert_set.exists()
+    class Meta:
+        verbose_name_plural = "UserPrograms"
+
 
 class Alert(models.Model):
     """Alert model
@@ -185,6 +206,9 @@ class Alert(models.Model):
                 states.add("patch")
         return states
 
+        class Meta:
+            verbose_name_plural = "Alerts"
+
 
 class Station(models.Model):
     """Station model
@@ -200,6 +224,9 @@ class Station(models.Model):
 
     def generate_token(self):
         self.token = get_random_token()
+
+    class Meta:
+        verbose_name_plural = "Stations"
 
 class Session(models.Model):
     """ Session model
@@ -218,4 +245,5 @@ class Session(models.Model):
         if delta.days:
             return False
         return True
-
+    class Meta:
+        verbose_name_plural = "Sessions"
