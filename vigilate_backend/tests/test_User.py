@@ -160,3 +160,42 @@ class UserTestCase(APITestCase):
             self.assertEqual(resp.status_code, 201)
             self.assertEqual(len(mail.outbox), 1)
             self.assertEqual(mail.outbox[0].subject, 'Vigilate account created')
+
+    def test_phone_number_format(self):
+        resp = self.client.post(basic_data.api_routes['users'],
+                                json.dumps({'email': test_User_data.same_user_to_create['email'],
+                                            'password': test_User_data.same_user_to_create['password']}),
+                                content_type='application/json')
+
+        self.assertEqual(resp.status_code, 201)
+        self.new_client = json.loads(resp.content.decode("utf-8"))
+
+        self.login(test_User_data.same_user_to_create["email"], test_User_data.same_user_to_create["password"])
+        for num in test_User_data.good_phone_numbers:
+            resp = self.client.patch(basic_data.api_routes['users']+'%d/' % self.new_client['id'],
+                                     json.dumps({"phone" : num}), content_type='application/json')
+            self.assertEqual(resp.status_code, 200)
+
+        for num in test_User_data.bad_phone_numbers:
+            resp = self.client.patch(basic_data.api_routes['users']+'%d/' % self.new_client['id'],
+                                     json.dumps({"phone" : num}), content_type='application/json')
+            self.assertEqual(resp.status_code, 400)
+
+    def test_email_format(self):
+        resp = self.client.post(basic_data.api_routes['users'],
+                                json.dumps({'email': test_User_data.same_user_to_create['email'],
+                                            'password': test_User_data.same_user_to_create['password']}),
+                                content_type='application/json')
+
+        self.assertEqual(resp.status_code, 201)
+        self.new_client = json.loads(resp.content.decode("utf-8"))
+        self.login(test_User_data.same_user_to_create["email"], test_User_data.same_user_to_create["password"])
+        for mail in test_User_data.good_emails:
+            resp = self.client.patch(basic_data.api_routes['users']+'%d/' % self.new_client['id'],
+                                     json.dumps({"email" : mail}), content_type='application/json')
+            self.assertEqual(resp.status_code, 200)
+
+        for mail in test_User_data.bad_emails:
+            resp = self.client.patch(basic_data.api_routes['users']+'%d/' % self.new_client['id'],
+                                     json.dumps({"email" : mail}), content_type='application/json')
+            self.assertEqual(resp.status_code, 400)
