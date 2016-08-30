@@ -15,3 +15,11 @@ wrong_password_user = {"email": "aaa@aaa.fr", "password": "a", "wrong_password":
 wrong_password_email = {"email": "aaa@aaa.fr", "password": "a", "wrong_email": "b"}
 
 bogus_basic_data = "Basic test"
+
+good_phone_numbers = ["+33611223344", "+15855004242", "+441743253876"]
+
+bad_phone_numbers = ["0666666666", "abcde", "4242"]
+
+good_emails = ["test@test.fr", "prenom.nom@epitech.eu", "user_42@lol.io"]
+
+bad_emails = ["test", "a@a.a", "123@123.0", "31337"]
