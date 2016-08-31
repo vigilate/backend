@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import Group
 from django import forms
-from vigilate_backend.models import User, UserPrograms, Alert, Station, Session
+from vigilate_backend.models import User, UserPrograms, Alert, Station, Session, Plans
 from vulnerability_manager.models import Cve, Cpe, Cwe, Reference
 
 # Register your models here.
@@ -20,7 +20,7 @@ class MyUserAdmin(UserAdmin):
         ('Important dates', {'fields': ('last_login',)}),
         ('Personal info', {'fields': ('phone',)}),
         ('Alert details', {'fields': ('default_alert_type',)}),
-        ('Other detials', {'fields': ('user_type', 'contrat', 'id_dealer')}),
+        ('Other details', {'fields': ('user_type', 'contrat', 'id_dealer')}),
     )
     add_fieldsets = (
         (None, {
@@ -29,7 +29,18 @@ class MyUserAdmin(UserAdmin):
         ),
 )
 
+    def get_plan(self, obj):
+        return obj.plan.name
+    get_plan.short_description = "Current Plan"
+    
 admin.site.register(User, MyUserAdmin)
+
+class PlansAdmin(admin.ModelAdmin):
+
+    list_display = ('name', 'price', 'max_stations')
+
+admin.site.register(Plans, PlansAdmin)
+
 admin.site.register(UserPrograms)
 admin.site.register(Alert)
 admin.site.register(Station)

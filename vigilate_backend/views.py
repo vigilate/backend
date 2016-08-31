@@ -14,7 +14,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.exceptions import AuthenticationFailed
 from pkg_resources import parse_version
-from vigilate_backend.utils import get_query, parse_cpe, get_token, get_scanner_cred
+from vigilate_backend.utils import get_query, parse_cpe, get_token, get_scanner_cred, nb_station_over_quota
 from vigilate_backend.models import User, UserPrograms, Alert, Station, Session
 from vigilate_backend.serializers import UserSerializer, UserProgramsSerializer, AlertSerializer, AlertSerializerDetail, StationSerializer, SessionSerializer
 from vigilate_backend import alerts
@@ -60,6 +60,28 @@ class UserViewSet(viewsets.ModelViewSet):
         except ConnectionRefusedError as e:
             print ("MAIL ERROR : ", e)
 
+    def perform_update(self, serializer):
+        updated = serializer.save()
+        stations = Station.objects.filter(user=updated.id)
+        over = nb_station_over_quota(stations.count(), updated)
+        enable_stations = [s for s in stations][:-over]
+        disable_stations = [s for s in stations][-over:]
+        if over:
+            for s in enable_stations:
+                if s.disabled:
+                    s.disabled = False
+                    s.save()
+
+            for s in disable_stations:
+                if not s.disabled:
+                    s.disabled = True
+                    s.save()
+        else:
+            for s in stations:
+                if s.disabled:
+                    s.disabled = False
+                    s.save()
+
     @detail_route(methods=['get'], url_path='stats')
     def stats(self, request, pk=None):
         ret = '{"detail":"%s"}'
@@ -68,10 +90,10 @@ class UserViewSet(viewsets.ModelViewSet):
         if request.user.id != pk:
             return HttpResponse(ret % "Forbidden",status=403)
 
-        data = {"programs" : UserPrograms.objects.filter(user=pk).count(),
+        data = {"programs" : UserPrograms.objects.filter(user=pk, poste__disabled=False).count(),
                 "stations" : Station.objects.filter(user=pk).count(),
-                "alerts": Alert.objects.filter(user=pk).count(),
-                "new_alerts": Alert.objects.filter(user=pk, view=False).count()
+                "alerts": Alert.objects.filter(user=pk, program__poste__disabled=False).count(),
+                "new_alerts": Alert.objects.filter(user=pk, program__poste__disabled=False, view=False).count()
         }
 
         return HttpResponse(json.dumps(data))
@@ -86,7 +108,7 @@ class UserProgramsViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """Get the queryset depending on the user permission
         """
-        return UserPrograms.objects.filter(user=self.request.user.id)
+        return UserPrograms.objects.filter(user=self.request.user.id, poste__disabled=False)
         
     def get_permissions(self):
         """Allow non-authenticated user to create an account
@@ -226,7 +248,7 @@ class AlertViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """Get the queryset depending on the user permission
         """
-        return Alert.objects.filter(user=self.request.user.id)
+        return Alert.objects.filter(user=self.request.user.id, program__poste__disabled=False)
 
     @detail_route(methods=['get'], url_path='mark_read')
     def mark_read(self, request, pk=None):

@@ -25,3 +25,4 @@ coverage==4.1
 coveralls==1.1
 django-phonenumber-field==1.1.0
 django-bulk-update==1.1.10
+stripe==1.37.0

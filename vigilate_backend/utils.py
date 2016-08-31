@@ -82,3 +82,17 @@ def get_scanner_cred(request):
         (None, None)
 
     return (email, token)
+
+def can_add_station(nb_station, user):
+    if nb_station >= 5 and user.contrat == 0:
+        return False
+    elif nb_station >= 15 and user.contrat == 1:
+        return False
+    return True
+
+def nb_station_over_quota(nb_station, user):
+    if nb_station >= 5 and user.contrat == 0:
+        return nb_station - 5
+    elif nb_station >= 15 and user.contrat == 1:
+        return nb_station - 15
+    return 0
