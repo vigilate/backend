@@ -49,7 +49,10 @@ class Plans(models.Model):
     name = models.CharField(max_length=30, verbose_name="plan type")
     price = models.FloatField(null=True)
     max_stations = models.IntegerField(null=False)
-
+    default = models.BooleanField(default=False)
+    enabled = models.BooleanField(default=False)
+    validity_time = models.IntegerField(default=0)
+    
     def __str__(self):
         return self.name
     
@@ -64,9 +67,9 @@ class User(AbstractBaseUser):
     email = models.EmailField(max_length=50, unique=True)
     phone = PhoneNumberField(null=True, blank=True)
     user_type = models.IntegerField(null=False, default=0)
-    contrat = models.IntegerField(null=False, default=0)
     id_dealer = models.IntegerField(default=0)
-    #plan = models.ForeignKey('Plans', default=1, on_delete=models.SET_DEFAULT)
+    plan = models.ForeignKey('Plans', default=None, null=True, on_delete=models.SET_DEFAULT)
+    plan_purchase_date = models.DateTimeField(auto_now=True)
 
     is_superuser = models.BooleanField(default=False)
     is_active = True

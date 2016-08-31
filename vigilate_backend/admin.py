@@ -9,18 +9,18 @@ from vulnerability_manager.models import Cve, Cpe, Cwe, Reference
 
 #Custom admin for user to try to fix the issue of lenght of the password
 class MyUserAdmin(UserAdmin):
-    list_display = ('id', 'email', 'last_login', 'phone', 'user_type', 'contrat', 'id_dealer', 'is_superuser', 'default_alert_type')
-    list_search = ('id', 'email', 'last_login', 'phone', 'user_type', 'contrat', 'id_dealer', 'is_superuser', 'default_alert_type')
+    list_display = ('id', 'email', 'last_login', 'phone', 'user_type', 'plan', 'id_dealer', 'is_superuser', 'default_alert_type')
+    list_search = ('id', 'email', 'last_login', 'phone', 'user_type', 'plan', 'id_dealer', 'is_superuser', 'default_alert_type')
     filter_horizontal = ()
     ordering = ('id', 'email')
-    list_filter = ('id', 'email', 'last_login', 'phone', 'user_type', 'contrat', 'id_dealer', 'is_superuser', 'default_alert_type')
+    list_filter = ('id', 'email', 'last_login', 'phone', 'user_type', 'plan', 'id_dealer', 'is_superuser', 'default_alert_type')
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
         ('Permissions', {'fields': ('is_superuser',)}),
         ('Important dates', {'fields': ('last_login',)}),
         ('Personal info', {'fields': ('phone',)}),
         ('Alert details', {'fields': ('default_alert_type',)}),
-        ('Other details', {'fields': ('user_type', 'contrat', 'id_dealer')}),
+        ('Other details', {'fields': ('user_type', 'plan', 'id_dealer')}),
     )
     add_fieldsets = (
         (None, {
@@ -37,7 +37,7 @@ admin.site.register(User, MyUserAdmin)
 
 class PlansAdmin(admin.ModelAdmin):
 
-    list_display = ('name', 'price', 'max_stations')
+    list_display = ('name', 'price', 'max_stations', 'validity_time', 'default', 'enabled')
 
 admin.site.register(Plans, PlansAdmin)
 

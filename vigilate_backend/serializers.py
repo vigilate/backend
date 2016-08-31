@@ -11,13 +11,14 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.User
-        fields = ('id', 'email', 'password', 'user_type', 'contrat', 'id_dealer', 'default_alert_type', 'phone')
+        fields = ('id', 'email', 'password', 'user_type', 'id_dealer', 'default_alert_type', 'phone', 'plan', 'plan_purchase_date')
+        
 
     def create(self, validated_data):
         """Create an user
         """
 
-        data = {k:v for k, v in validated_data.items() if k != "password"}
+        data = {k:v for k, v in validated_data.items() if not k in ['password', 'user_type', 'id_dealer', 'default_alert_type', 'plan', 'plan_purchase_date']}
         user = models.User.objects.create(**data)
         if "password" in validated_data:
             user.set_password(validated_data['password'])
@@ -40,9 +41,6 @@ class UserSerializer(serializers.ModelSerializer):
         
         instance.id = validated_data.get('id', instance.id)
         instance.email = validated_data.get('email', instance.email)
-        instance.user_type = validated_data.get('user_type', instance.user_type)
-        instance.contrat = validated_data.get('contrat', instance.contrat)
-        instance.id_dealer = validated_data.get('id_dealer', instance.id_dealer)
         instance.default_alert_type = validated_data.get('default_alert_type', instance.default_alert_type)
         instance.phone = validated_data.get('phone', instance.phone)
         if 'password' in validated_data:
@@ -149,3 +147,11 @@ class SessionSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Session
         fields = ()
+
+class PlansSerializer(serializers.ModelSerializer):
+    """Serialisation of plans
+    """
+
+    class Meta:
+        model = models.Plans
+        fields = ('id', 'name', 'max_stations', 'price', 'validity_time')

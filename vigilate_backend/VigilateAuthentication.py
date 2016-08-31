@@ -4,7 +4,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import authentication
 from rest_framework import exceptions
 from vigilate_backend.models import User, Session
-from vigilate_backend.utils import get_query, avoid_id_falsfication, get_token, get_scanner_cred
+from vigilate_backend.utils import get_query, avoid_id_falsfication, get_token, get_scanner_cred, check_expired_plan
 
 class VigilateAuthentication(authentication.BasicAuthentication):
     """Vigilate authentication class using pyargon2
@@ -38,8 +38,12 @@ class VigilateAuthentication(authentication.BasicAuthentication):
         #update data
         session.save()
         user = session.user
+
+        ret = self.security_check_then_return(user, request)
+
+        check_expired_plan(user)
         
-        return self.security_check_then_return(user, request)
+        return ret
 
 def ScannerAuthentication(request):
     (email, token) = get_scanner_cred(request)
