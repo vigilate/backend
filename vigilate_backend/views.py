@@ -14,9 +14,9 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.exceptions import AuthenticationFailed
 from pkg_resources import parse_version
-from vigilate_backend.utils import get_query, parse_cpe, get_token, get_scanner_cred, nb_station_over_quota
-from vigilate_backend.models import User, UserPrograms, Alert, Station, Session
-from vigilate_backend.serializers import UserSerializer, UserProgramsSerializer, AlertSerializer, AlertSerializerDetail, StationSerializer, SessionSerializer
+from vigilate_backend.utils import get_query, parse_cpe, get_token, get_scanner_cred, nb_station_over_quota, update_contrat
+from vigilate_backend.models import User, UserPrograms, Alert, Station, Session, Plans
+from vigilate_backend.serializers import UserSerializer, UserProgramsSerializer, AlertSerializer, AlertSerializerDetail, StationSerializer, SessionSerializer, PlansSerializer
 from vigilate_backend import alerts
 from vulnerability_manager import cpe_updater
 from vigilate_backend.VigilateAuthentication import VigilateAuthentication, ScannerAuthentication
@@ -49,6 +49,9 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         new_user = serializer.save()
+        if new_user.plan == None:
+            new_user.plan = Plans.objects.filter(default=True).first()
+            new_user.save()
         try:
             send_mail(
                 'Vigilate account created',
@@ -362,6 +365,18 @@ class SessionViewSet(viewsets.mixins.CreateModelMixin,
         session.delete()
         return Response(status=status.HTTP_403_FORBIDDEN)
 
+class PlansViewSet(viewsets.mixins.ListModelMixin,
+                  viewsets.GenericViewSet):
+    """View for plans
+    """
+    serializer_class = PlansSerializer
+
+    def get_queryset(self):
+        """Get the queryset depending on the user permission
+        """
+        return Plans.objects.filter(enabled=True)
+
+    
 @csrf_exempt
 def get_scanner(request, station_id):
 
@@ -398,3 +413,69 @@ def get_scanner(request, station_id):
     rep['Content-Disposition'] = 'attachment; filename=scanner.py'
     rep.write(conf_scan)
     return rep
+
+
+@csrf_exempt
+def checkout(request, plan_id):
+
+    if request.method == "OPTIONS":
+        return HttpResponse()
+    if request.method != "POST":
+        return HttpResponse(status=400)
+
+    plan_id = int(plan_id)
+    try:
+        plan = Plans.objects.get(enabled=True, id=plan_id)
+    except Plans.DoesNotExist:
+        return HttpResponse(status=404)
+
+    auth = VigilateAuthentication()
+
+    try:
+        auth_result = auth.authenticate(request)
+        if not auth_result:
+            return HttpResponse(ret % "Unauthenticated", status=403)
+        request.user = auth_result[0]
+    except AuthenticationFailed as e:
+        return HttpResponse(ret % e, status=401)
+
+    data = json.loads(request.body.decode("utf8"))
+
+    if plan.price == 0:
+        request.user.contrat = int(plan_id)
+        request.user.save()
+        update_contrat(request.user)
+        return HttpResponse(status=200)
+
+    import stripe
+
+    stripe.api_key = "sk_test_bbV6OD8cVZ8WDDCBrrUo2ovn"
+
+    customer_list = stripe.Customer.list()
+    if not request.user.email in [x.id for x in customer_list["data"]]:
+    
+        customer = stripe.Customer.create(
+            customer=request.user.email,
+            source=data["token"]
+        )
+
+    desc = ""
+    amount = 0
+    
+    charge = stripe.Charge.create(
+        customer=request.user.email,
+        amount=round(plan.price*100),
+        currency='eur',
+        description=plan.name
+    )
+
+    if charge["status"] == "succeeded":
+        request.user.plan = plan
+        request.user.plan_purchase_date = timezone.now()
+        request.user.save()
+        update_contrat(request.user)
+
+    print(charge)
+    
+    return HttpResponse()
+

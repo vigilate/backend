@@ -5,7 +5,10 @@
     "fields": {
       "name": "Basic",
       "price": 0,
-      "max_stations": 5
+	"max_stations": 5,
+	"default": true,
+	"enabled": true,
+	"validity_time": 0
     }
   },
   {
@@ -14,7 +17,10 @@
     "fields": {
       "name": "Silver",
       "price": 19.99,
-      "max_stations": 20
+	"max_stations": 20,
+	"default": false,
+	"enabled": true,
+	"validity_time": 60
     }
   },
   {
@@ -23,7 +29,10 @@
     "fields": {
       "name": "Gold",
       "price": 99.99,
-      "max_stations": 0
+	"max_stations": 0,
+	"default": false,
+	"enabled": true,
+	"validity_time": 60
     }
   }
 ]
