@@ -1,12 +1,15 @@
 import json
 import base64
-from vigilate_backend.models import Station, User, Plans
+from vigilate_backend.models import Station, User, Plans, UserPrograms
 from django.utils import timezone
+from vigilate_backend.models import UserPrograms
+from vigilate_backend import alerts
+from vulnerability_manager import cpe_updater
 
 def get_query(request):
     """Parse a query
     """
-    if request.method == "POST":
+    if request.method == "POST" or request.method == "PATCH":
         if "application/json" in request.content_type:
             return request.data
         query = list(request.data)[0]
@@ -130,3 +133,31 @@ def check_expired_plan(user):
         user.plan = Plans.objects.filter(default=True).first()
         user.save()
         update_contrat(user)
+
+def add_progs(elem, versions, user, station, extra_field, up_to_date):
+    for version in versions:
+        (cpe, up_to_date) =  cpe_updater.get_cpe_from_name_version(elem['program_name'], version, up_to_date)
+        new_prog = UserPrograms(user=user, minimum_score=1, poste=station,
+                                program_name=elem['program_name'], program_version=version, cpe=cpe)
+        if 'minimum_score' in elem:
+            new_prog.minimum_score = int(elem['minimum_score'])
+        for f in extra_field:
+            setattr(new_prog, f, int(extra_field[f]))
+
+        new_prog.save()
+        alerts.check_prog(new_prog, user)
+
+def maj_progs(progs, elem, versions, user, up_to_date):
+    for (prog, version) in zip(progs, versions):
+        prog_changed = False
+        if prog.program_version != version:
+            prog_changed = True
+            prog.program_version = version
+            (cpe, up_to_date) = cpe_updater.get_cpe_from_name_version(elem['program_name'], version, up_to_date)
+            prog.cpe = cpe
+        if 'minimum_score' in elem and prog.minimum_score != int(elem['minimum_score']):
+            prog_changed = True
+            prog.minimum_score = int(elem['minimum_score'])
+        if prog_changed:
+            prog.save()
+            alerts.check_prog(prog, user)

@@ -134,8 +134,6 @@ class AlertTestCase(APITestCase):
                                 json.dumps(test_Alert_data.prog_vuln),
                                 content_type="application/json")
 
-        print(resp.content)
-
         self.assertEqual(resp.status_code, 200)
         resp = self.client.get(basic_data.api_routes['alerts'])
         data = json.loads(resp.content.decode("utf8"))
