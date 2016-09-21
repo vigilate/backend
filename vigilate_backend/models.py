@@ -10,7 +10,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator, MaxLeng
 from django.utils.crypto import get_random_string
 from django.conf import settings
 from phonenumber_field.modelfields import PhoneNumberField
-
+from simple_history.models import HistoricalRecords
 # Create your models here.
 
 def longer_password(sender, *args, **kwargs):
@@ -70,6 +70,7 @@ class User(AbstractBaseUser):
     id_dealer = models.IntegerField(default=0)
     plan = models.ForeignKey('Plans', default=None, null=True, on_delete=models.SET_DEFAULT)
     plan_purchase_date = models.DateTimeField(auto_now=True)
+    history = HistoricalRecords()
 
     is_superuser = models.BooleanField(default=False)
     is_active = True
@@ -121,7 +122,8 @@ class User(AbstractBaseUser):
         hsh = PyArgon2.Hash_pwd(password.encode(), salt.encode())
         hsh = (salt.encode()+b"$"+binascii.hexlify(hsh)).decode("utf8")
         self.password = hsh
-
+    
+    
     def check_password(self, pwd):
         """Check if the given password match the real one
         """
@@ -166,7 +168,7 @@ class UserPrograms(models.Model):
     web_score = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)], default=0)
     web_enabled = models.BooleanField(default=True)
     alert_type_default = models.BooleanField(default=True)
-
+    history = HistoricalRecords()
 
     def alert_id(self):
         return Alert.objects.filter(program=self.id).values_list('id', flat=True).first()
@@ -183,7 +185,8 @@ class Alert(models.Model):
     program = models.ForeignKey('UserPrograms')
     cve = models.ManyToManyField('vulnerability_manager.Cve')
     view = models.BooleanField(default=False)
-
+    history = HistoricalRecords()
+    
     def max_cvss(self):
         if self.cve.values_list("cvss_score", flat=True):
             return max(self.cve.values_list("cvss_score", flat=True))
@@ -226,7 +229,8 @@ class Station(models.Model):
     user = models.ForeignKey('User')
     name = models.CharField(max_length=100)
     disabled = models.BooleanField(default=False)
-
+    history = HistoricalRecords()
+    
     def generate_token(self):
         self.token = get_random_token()
 
@@ -243,7 +247,7 @@ class Session(models.Model):
     token = models.CharField(max_length=50, default=get_random_token, primary_key=True, unique=True)
     user = models.ForeignKey('User', null=True, default=None)
     date = models.DateTimeField(auto_now=True)
-
+    history = HistoricalRecords()
     def is_valid(self):
         delta = now() - self.date
 
@@ -252,3 +256,4 @@ class Session(models.Model):
         return True
     class Meta:
         verbose_name_plural = "Sessions"
+

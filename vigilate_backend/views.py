@@ -14,7 +14,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.exceptions import AuthenticationFailed
 from pkg_resources import parse_version
-from vigilate_backend.utils import get_query, parse_cpe, get_token, get_scanner_cred, nb_station_over_quota, update_contrat
+from vigilate_backend.utils import get_query, parse_cpe, get_token, get_scanner_cred, nb_station_over_quota, update_contrat, add_progs, maj_progs
 from vigilate_backend.models import User, UserPrograms, Alert, Station, Session, Plans
 from vigilate_backend.serializers import UserSerializer, UserProgramsSerializer, AlertSerializer, AlertSerializerDetail, StationSerializer, SessionSerializer, PlansSerializer
 from vigilate_backend import alerts
@@ -171,9 +171,6 @@ class UserProgramsViewSet(viewsets.ModelViewSet):
                     extra_field[k] = query[k]
 
             query['programs_list'] = [elem]
-            if UserPrograms.objects.filter(user=request.user.id, program_name=elem['program_name'], poste=station).exists():
-                ret = {"program_name": ["A program with this name already exists for station %s" % (station.name)]}
-                return Response(ret, status=status.HTTP_400_BAD_REQUEST)
 
         for elem in query['programs_list']:
             if not all(x in elem for x in ['program_version', 'program_name']):
@@ -184,60 +181,57 @@ class UserProgramsViewSet(viewsets.ModelViewSet):
             up_to_date = True
 
         for elem in query['programs_list']:
-            prog = UserPrograms.objects.filter(user=request.user.id, program_name=elem['program_name'], poste=station)
+            progs = UserPrograms.objects.filter(user=request.user.id, program_name=elem['program_name'], poste=station)
 
             # if prog, user is already monitoring the given program, update is needed
-            if prog:
+            if progs:
                 
-                prog = prog[0]
-                prog_changed = False
-                if prog.program_version != elem['program_version']:
-                    prog_changed = True
-                    prog.program_version = elem['program_version']
-                    (cpe, up_to_date) = cpe_updater.get_cpe_from_name_version(elem['program_name'], elem['program_version'], up_to_date)
-                    prog.cpe = cpe
-                if 'minimum_score' in elem and prog.minimum_score != int(elem['minimum_score']):
-                    prog_changed = True
-                    prog.minimum_score = int(elem['minimum_score'])
-                if prog_changed:
-                    prog.save()
-                    alerts.check_prog(prog, request.user)
+                if len(progs) == len(elem['program_version']):
+                    maj_progs(progs, elem, elem['program_version'], request.user, up_to_date)
+                elif len(progs) > len(elem['program_version']):
+                    # maj as much progs as tehy are in the data from the scanner
+                    maj_progs(progs[:len(elem['program_version'])], elem, elem['program_version'], request.user, up_to_date)
+                    # delete other progs with same name
+                    for prog in progs[len(elem['program_version']):]:
+                        prog.delete()
+                else:
+                    # maj as much progs as tehy are in db
+                    maj_progs(progs, elem, elem['program_version'][:len(progs)], request.user, up_to_date)
+                    # create the other ones
+                    add_progs(elem, elem['program_version'][len(progs):], request.user, station, extra_field, up_to_date)
             else:
-                #else: add a new program
+                #else: add new programs
+                add_progs(elem, elem['program_version'], request.user, station, extra_field, up_to_date)
 
-                (cpe, up_to_date) =  cpe_updater.get_cpe_from_name_version(elem['program_name'], elem['program_version'], up_to_date)
-
-                new_prog = UserPrograms(user=request.user, minimum_score=1, poste=station,
-                                        program_name=elem['program_name'], program_version=elem['program_version'], cpe=cpe)
-                if 'minimum_score' in elem:
-                    new_prog.minimum_score = int(elem['minimum_score'])
-                for f in extra_field:
-                    setattr(new_prog, f, int(extra_field[f]))
-
-                new_prog.save()
-                alerts.check_prog(new_prog, request.user)
-
-            if only_one_program:
-                obj = UserPrograms.objects.get(user=request.user.id, program_name=elem['program_name'], poste=station)
+            if only_one_program: # this sould happen only when the request came from the frontend
+                obj = UserPrograms.objects.get(user=request.user.id, program_name=elem['program_name'], poste=station, program_version=elem['program_version'][0])
                 serializer = self.get_serializer(obj)
                 return Response(serializer.data, status=status.HTTP_200_OK)
 
         return Response(status=status.HTTP_200_OK)
 
-
-    def perform_update(self, serializer):
-        orig = UserPrograms.objects.get(id=serializer.instance.id)
+    def update(self, request, pk=None, partial=None):
+        prog = UserPrograms.objects.get(id=pk)
         check = False
-        if orig.program_version != serializer.validated_data['program_version'] or \
-           orig.program_name != serializer.validated_data['program_name']:
-            check = True            
-        instance = serializer.save()
-        (cpe, _) = cpe_updater.get_cpe_from_name_version(instance.program_name, instance.program_version, True)
-        instance.cpe = cpe
-        instance.save(update_fields=["cpe"])
-        if check:
-            alerts.check_prog(instance, self.request.user)
-
+        query = get_query(request)
+        if query:
+            if prog.program_version != query['program_version'][0] or \
+               prog.program_name != query['program_name']:
+                check = True
+            prog.program_version = query['program_version'][0]
+            prog.program_name = query['program_name']
+            for k in ['sms_score', 'sms_enabled', 'email_score', 'email_enabled',
+                      'web_score', 'web_enabled', 'alert_type_default']:
+                if k in query:
+                    setattr(prog, k, query[k])
+            (cpe, _) = cpe_updater.get_cpe_from_name_version(prog.program_name, prog.program_version, True)
+            prog.cpe = cpe
+            prog.save()
+            if check:
+                alerts.check_prog(prog, self.request.user)
+            serializer = self.get_serializer(prog)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_200_OK)
 
 class AlertViewSet(viewsets.ModelViewSet):
     """View for alerts

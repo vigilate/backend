@@ -28,7 +28,7 @@ class UserSerializer(serializers.ModelSerializer):
     def validate(self, data):
         if not hasattr(self.instance, "id"):
             return data
-        
+
         prev_state = models.User.objects.get(id=self.instance.id)
         if 'default_alert_type' in data and data['default_alert_type'] == models.User.SMS and\
            (('phone' in data and not data['phone']) or (not 'phone' in data and not prev_state.phone)):
@@ -59,6 +59,7 @@ class UserProgramsSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         """Create an user program
         """
+        validated_data['program_version'] = validated_data['program_version'][0]
         return models.UserPrograms.objects.create(**validated_data)
 
     def validate(self, data):
@@ -66,25 +67,6 @@ class UserProgramsSerializer(serializers.ModelSerializer):
            ('sms_enabled' in data and data['sms_enabled']) and not data['user'].phone:
             raise serializers.ValidationError({'sms_enabled': ['Cannot enable sms alert for an user without a phone number registered']})
         return data
-
-    def update(self, instance, validated_data):
-        """Update an user program
-        """
-        instance.id = validated_data.get('id', instance.id)
-        instance.program_name = validated_data.get('program_name', instance.program_name)
-        instance.program_version = validated_data.get('program_version', instance.program_version)
-        instance.minimum_score = validated_data.get('minimum_score', instance.minimum_score)
-        instance.user = validated_data.get('user', instance.user)
-        instance.poste = validated_data.get('poste', instance.poste)
-        instance.sms_score = validated_data.get('sms_score', instance.sms_score)
-        instance.email_score = validated_data.get('email_score', instance.email_score)
-        instance.web_score = validated_data.get('web_score', instance.web_score)
-        instance.sms_enabled = validated_data.get('sms_enabled', instance.sms_enabled)
-        instance.email_enabled = validated_data.get('email_enabled', instance.email_enabled)
-        instance.web_enabled = validated_data.get('web_enabled', instance.web_enabled) 
-        instance.alert_type_default = validated_data.get('alert_type_default', instance.alert_type_default)
-        instance.save()
-        return instance
 
 class AlertSerializer(serializers.ModelSerializer):
     """Serialisation of user alerts

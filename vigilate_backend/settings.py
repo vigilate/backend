@@ -45,6 +45,7 @@ INSTALLED_APPS = (
     'vigilate_backend',
     'vulnerability_manager',
     'django_nose',
+    'simple_history',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -57,6 +58,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'middleware.vigilateMiddleware.VigilateMiddleware',
+    'simple_history.moddleware.HistoryRequestMiddleware',
 )
 
 ROOT_URLCONF = 'vigilate_backend.urls'
