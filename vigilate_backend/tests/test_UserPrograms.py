@@ -45,7 +45,7 @@ class UserProgramsTestCase(APITestCase):
             user_progs = models.UserPrograms.objects.filter(user=self.new_user["id"])
 
             prog_saved = {"program_name" : user_progs[0].program_name, "program_version" : user_progs[0].program_version}
-            prog_sent = {"program_name" :  prog["program_name"], "program_version" : prog["program_version"]}
+            prog_sent = {"program_name" :  prog["program_name"], "program_version" : prog["program_version"][0]}
         
             self.assertEqual(prog_sent, prog_saved)
 
@@ -54,12 +54,12 @@ class UserProgramsTestCase(APITestCase):
 
             resp = self.client.post(basic_data.api_routes['programs'], json.dumps(prog),
                                     content_type="application/json")
-            
+
             self.assertEqual(resp.status_code, 200)
             user_progs = models.UserPrograms.objects.filter(user=self.new_user["id"])
 
             prog_saved = {"program_name" : user_progs[0].program_name, "program_version" : user_progs[0].program_version}
-            prog_sent = {"program_name" :  prog["program_name"], "program_version" : prog["program_version"]}
+            prog_sent = {"program_name" :  prog["program_name"], "program_version" : prog["program_version"][0]}
 
             self.assertEqual(prog_sent, prog_saved)
 
@@ -76,4 +76,5 @@ class UserProgramsTestCase(APITestCase):
                 database_programs_json.append(elem)
         
             for sent in prog_list['programs_list']:
+                sent['program_version'] = sent['program_version'][0]
                 self.assertTrue(sent in database_programs_json)
