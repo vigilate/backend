@@ -22,6 +22,9 @@ from vulnerability_manager import cpe_updater
 from vigilate_backend.VigilateAuthentication import VigilateAuthentication, ScannerAuthentication
 from datetime import timedelta
 from django.utils import timezone
+from ratelimit.mixins import RatelimitMixin
+
+RATELIMIT_RATE = '120/m'
 
 def home(request):
     """Vigilate root url content
@@ -29,9 +32,15 @@ def home(request):
     text = """VIGILATE 1337"""
     return HttpResponse(text)
 
-class UserViewSet(viewsets.ModelViewSet):
+
+
+
+class UserViewSet(RatelimitMixin, viewsets.ModelViewSet):
     """View for users
     """
+    ratelimit_key = 'header:authorization'
+    ratelimit_rate = RATELIMIT_RATE
+    ratelimit_block = True
     serializer_class = UserSerializer
 
     def get_permissions(self):
@@ -87,6 +96,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @detail_route(methods=['get'], url_path='stats')
     def stats(self, request, pk=None):
+        print('in stats', request)
         ret = '{"detail":"%s"}'
 
         pk = int(pk)
@@ -106,6 +116,9 @@ class UserProgramsViewSet(viewsets.ModelViewSet):
     """View for users programs
     """
 
+    ratelimit_key = 'header:authorization'
+    ratelimit_rate = RATELIMIT_RATE
+    ratelimit_block = True
     serializer_class = UserProgramsSerializer
 
     def get_queryset(self):
@@ -236,7 +249,11 @@ class UserProgramsViewSet(viewsets.ModelViewSet):
 class AlertViewSet(viewsets.ModelViewSet):
     """View for alerts
     """
+    ratelimit_key = 'header:authorization'
+    ratelimit_rate = RATELIMIT_RATE
+    ratelimit_block = True
     serializer_class = AlertSerializer
+
     def get_serializer_class(self):
         if self.action == 'retrieve':
             return AlertSerializerDetail
@@ -297,6 +314,9 @@ class AlertViewSet(viewsets.ModelViewSet):
 class StationViewSet(viewsets.ModelViewSet):
     """View for station
     """
+    ratelimit_key = 'header:authorization'
+    ratelimit_rate = RATELIMIT_RATE
+    ratelimit_block = True
     serializer_class = StationSerializer
     
     def get_queryset(self):
@@ -310,6 +330,9 @@ class SessionViewSet(viewsets.mixins.CreateModelMixin,
                      viewsets.GenericViewSet):
     """View for session
     """
+    ratelimit_key = 'header:authorization'
+    ratelimit_rate = RATELIMIT_RATE
+    ratelimit_block = True
     serializer_class = SessionSerializer
     
     def get_permissions(self):
@@ -363,6 +386,9 @@ class PlansViewSet(viewsets.mixins.ListModelMixin,
                   viewsets.GenericViewSet):
     """View for plans
     """
+    ratelimit_key = 'header:authorization'
+    ratelimit_rate = RATELIMIT_RATE
+    ratelimit_block = True
     serializer_class = PlansSerializer
 
     def get_queryset(self):
