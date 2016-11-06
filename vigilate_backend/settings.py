@@ -44,6 +44,7 @@ INSTALLED_APPS = (
     'rest_framework',
     'vigilate_backend',
     'vulnerability_manager',
+    'raven.contrib.django.raven_compat',
     'django_nose',
 )
 
@@ -146,7 +147,16 @@ EMAIL_USE_TLS = False
 DEFAULT_FROM_EMAIL = 'Server <vigilate_2017@epitech.eu>'
 
 
+# To put in the local settings
+RAVEN_CONFIG = {
+     #'dsn': 'https://..'
+}
+
+from raven.contrib.django.raven_compat.models import client
+
 try:
     from vigilate_backend.local_settings import *
 except ImportError:
     pass
+
+client.captureException()
