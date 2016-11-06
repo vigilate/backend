@@ -144,3 +144,9 @@ EMAIL_HOST_USER = ''
 EMAIL_HOST_PASSWORD = ''
 EMAIL_USE_TLS = False
 DEFAULT_FROM_EMAIL = 'Server <vigilate_2017@epitech.eu>'
+
+
+try:
+    from vigilate_backend.local_settings import *
+except ImportError:
+    pass
