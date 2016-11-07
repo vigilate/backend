@@ -152,11 +152,7 @@ RAVEN_CONFIG = {
      #'dsn': 'https://..'
 }
 
-from raven.contrib.django.raven_compat.models import client
-
 try:
     from vigilate_backend.local_settings import *
 except ImportError:
     pass
-
-client.captureException()
