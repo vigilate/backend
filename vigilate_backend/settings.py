@@ -58,7 +58,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'middleware.vigilateMiddleware.VigilateMiddleware',
-    'simple_history.moddleware.HistoryRequestMiddleware',
+    'simple_history.middleware.HistoryRequestMiddleware',
 )
 
 ROOT_URLCONF = 'vigilate_backend.urls'
