@@ -46,7 +46,6 @@ INSTALLED_APPS = (
     'vulnerability_manager',
     'raven.contrib.django.raven_compat',
     'django_nose',
-    'simple_history',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -59,7 +58,6 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'middleware.vigilateMiddleware.VigilateMiddleware',
-    'simple_history.middleware.HistoryRequestMiddleware',
 )
 
 ROOT_URLCONF = 'vigilate_backend.urls'

@@ -10,7 +10,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator, MaxLeng
 from django.utils.crypto import get_random_string
 from django.conf import settings
 from phonenumber_field.modelfields import PhoneNumberField
-from simple_history.models import HistoricalRecords
+
 # Create your models here.
 
 def longer_password(sender, *args, **kwargs):
@@ -63,7 +63,6 @@ class User(AbstractBaseUser):
     """User model
     """
 
-    history = HistoricalRecords()
     id = models.AutoField(primary_key=True, unique=True)
     email = models.EmailField(max_length=50, unique=True)
     phone = PhoneNumberField(null=True, blank=True)
@@ -152,8 +151,7 @@ patch_password(User)
 class UserPrograms(models.Model):
     """User programs model
     """
-
-    history = HistoricalRecords()
+    
     id = models.AutoField(primary_key=True, unique=True)
     program_name = models.CharField(max_length=100)
     program_version = models.CharField(max_length=100)
@@ -179,8 +177,7 @@ class UserPrograms(models.Model):
 class Alert(models.Model):
     """Alert model
     """
-
-    history = HistoricalRecords()
+    
     id = models.AutoField(primary_key=True, unique=True)
     user = models.ForeignKey('User')
     program = models.ForeignKey('UserPrograms')
@@ -221,7 +218,6 @@ class Station(models.Model):
     """Station model
     """
 
-    history = HistoricalRecords()
     def get_random_token():
         return get_random_string(length=100)
     
@@ -244,7 +240,6 @@ class Session(models.Model):
     def get_random_token():
         return get_random_string(length=50)
 
-    history = HistoricalRecords()
     token = models.CharField(max_length=50, default=get_random_token, primary_key=True, unique=True)
     user = models.ForeignKey('User', null=True, default=None)
     date = models.DateTimeField(auto_now=True)
